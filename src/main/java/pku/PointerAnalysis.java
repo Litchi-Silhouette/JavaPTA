@@ -3,8 +3,8 @@ package pku;
 import pascal.taie.World;
 import pascal.taie.analysis.ProgramAnalysis;
 import pascal.taie.config.AnalysisConfig;
-public class PointerAnalysis extends PointerAnalysisTrivial
-{
+
+public class PointerAnalysis extends PointerAnalysisTrivial {
     public static final String ID = "pku-pta";
 
     public PointerAnalysis(AnalysisConfig config) {
@@ -26,6 +26,11 @@ public class PointerAnalysis extends PointerAnalysisTrivial
         //
         // As for when and how you enter one method,
         // it's your analysis assignment to accomplish
+
+        // create domain
+        // add all variables to domain
+        // generate constraints
+        // solve constraints
 
         return super.analyze();
         // return result;

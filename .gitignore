@@ -4,6 +4,8 @@
 .idea/
 bin/
 build/
+buildSrc/
+java-benchmarks/
 cache/
 out/
 output/
