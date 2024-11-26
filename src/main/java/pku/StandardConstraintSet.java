@@ -1,10 +1,11 @@
 package pku;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class StandardConstraintSet {
+    // 
     private HashMap<Integer, List<Integer>> constraint;
 
     public StandardConstraintSet() {
