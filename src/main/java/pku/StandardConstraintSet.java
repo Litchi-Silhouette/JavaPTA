@@ -2,23 +2,27 @@ package pku;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class StandardConstraintSet {
-    private HashMap<Integer, List<Integer>> constraint;
+    private List<SimpleConstraint> sim_constraint;
+    private List<AllInConstraint> allin_constraint;
+    private List<AllHasConstraint> allhas_constraint;
 
     public StandardConstraintSet() {
-        constraint = new HashMap<>();
+        sim_constraint = new ArrayList<>();
+        allin_constraint = new ArrayList<>();
+        allhas_constraint = new ArrayList<>();
     }
 
-    public void addConstraint(int index, int value) {
-        if (!constraint.containsKey(index)) {
-            constraint.put(index, new ArrayList<>());
-        }
-        constraint.get(index).add(value);
+    public void addSimpleConstraint(SimpleConstraint sc) {
+        sim_constraint.add(sc);
     }
 
-    public void calculate() {
-        // do something
+    public void addAllInConstraint(AllInConstraint aic) {
+        allin_constraint.add(aic);
+    }
+
+    public void addAllHasConstraint(AllHasConstraint ahc) {
+        allhas_constraint.add(ahc);
     }
 }
