@@ -9,6 +9,7 @@ public class UnionFind <T> {
     private HashSet<T> roots;
     public UnionFind() {
         parent = new HashMap<>();
+        roots = new HashSet<>();
     }
     public void add(T element) {
         if (!parent.containsKey(element)) {
