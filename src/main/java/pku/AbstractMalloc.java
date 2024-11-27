@@ -4,7 +4,7 @@ import pascal.taie.language.type.Type;
 
 public class AbstractMalloc {
     public int count;
-    public int value; // -1 for unknown
+    public int value; // 0 for unknown
     public Type type;
 
     public AbstractMalloc(int count, int value, Type type) {

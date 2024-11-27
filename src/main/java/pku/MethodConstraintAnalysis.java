@@ -6,16 +6,14 @@ import pascal.taie.ir.IR;
 
 public class MethodConstraintAnalysis extends MethodAnalysis<MethodConstraintResult> {
     public static final String ID = "pku-pta-method-constraint";
-    public AbstractMallocDomain mallocDomain;
 
-    public MethodConstraintAnalysis(AnalysisConfig config, AbstractMallocDomain mallocDomain) {
+    public MethodConstraintAnalysis(AnalysisConfig config) {
         super(config);
-        this.mallocDomain = mallocDomain;
     }
 
     @Override
     public MethodConstraintResult analyze(IR ir) {
-        var result = new MethodConstraintResult(mallocDomain);
+        var result = new MethodConstraintResult();
         result.analysis(ir);
         return result;
     }
