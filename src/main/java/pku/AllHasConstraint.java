@@ -34,4 +34,9 @@ public class AllHasConstraint {
     public List<Integer> getElements() {
         return this.elements;
     }
+
+    @Override
+    public String toString() {
+        return "forall x in " + left + ", x contains " + elements;
+    }
 }

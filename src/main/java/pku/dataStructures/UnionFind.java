@@ -25,6 +25,7 @@ public class UnionFind <T> {
         parent.put(element, root);
         return root;
     }
+    // 会将 element1 的根节点指向 element2 的根节点
     public void union(T element1, T element2) {
         T root1 = find(element1);
         T root2 = find(element2);

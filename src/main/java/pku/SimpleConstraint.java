@@ -33,4 +33,16 @@ public class SimpleConstraint {
     public List<Integer> getElements() {
         return this.elements;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        for (Integer subset : subsets) {
+            res.append(subset).append(" subset ").append(left).append("\n");
+        }
+        for (Integer element : elements) {
+            res.append(element).append(" in ").append(left).append("\n");
+        }
+        return res.toString();
+    }
 }

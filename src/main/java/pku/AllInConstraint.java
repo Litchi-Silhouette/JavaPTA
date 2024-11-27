@@ -17,4 +17,9 @@ public class AllInConstraint {
     public int getRight() {
         return this.right;
     }
+
+    @Override
+    public String toString() {
+        return "forall x in " + left + ", x in " + right;
+    }
 }
