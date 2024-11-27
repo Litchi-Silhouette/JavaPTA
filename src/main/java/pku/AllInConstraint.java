@@ -1,7 +1,7 @@
 package pku;
 
 public class AllInConstraint {
-    // for x in left, x in right;
+    // for x in left, x contains in right;
     private int left;
     private int right;
 
@@ -20,6 +20,6 @@ public class AllInConstraint {
 
     @Override
     public String toString() {
-        return "forall x in " + left + ", x in " + right;
+        return "forall x in " + left + ", x contains in " + right;
     }
 }

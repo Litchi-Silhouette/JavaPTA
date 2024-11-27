@@ -33,7 +33,10 @@ public class Graph <V> {
             System.out.println("Vertex " + vertex + " already exists");
         }
     }
-    // 这里我们假设用 0 表示边活跃，用非零表示边不活跃
+    public boolean isSameVertex(V vertex1, V vertex2) {
+        return union_find.find(vertex1) == union_find.find(vertex2);
+    }
+    // 这里我们假设用 0 表示边活跃，用非零表示边不活跃。注意这里我们不检查自环
     public void addEdge(V from, V to, Integer label) {
         V from1 = union_find.find(from);
         V to1 = union_find.find(to);
@@ -63,6 +66,14 @@ public class Graph <V> {
             System.out.println("Vertex " + vertex + " not exists in add infos");
         }
         HashSet<Integer> info = info_map.computeIfAbsent(vertex1, k -> new HashSet<>());
+        if (DEBUG) {
+            if (info.addAll(infos)) {
+                System.out.println("Add infos to vertex " + vertex);
+                System.out.println("Infos : " + infos);
+                return true;
+            }
+            return false;
+        }
         return info.addAll(infos);
     }
     public HashSet<Integer> getInfo(V vertex) {

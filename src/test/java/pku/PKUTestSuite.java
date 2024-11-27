@@ -6,7 +6,8 @@ import org.junit.platform.suite.api.Suite;
 @Suite
 @SelectClasses(
         {
-                GraphTestPKU.class
+                GraphTestPKU.class,
+                solveConstraintTest.class
         }
 )
 
