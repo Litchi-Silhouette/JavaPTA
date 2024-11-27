@@ -1,37 +1,16 @@
 package pku;
 
-import java.util.List;
-import java.util.ArrayList;
+import pascal.taie.language.classes.JField;
 
 public class AllHasConstraint {
-    // for x in left, x contains e;
-    private int left;
-    private List<Integer> subsets;
-    private List<Integer> elements;
+    // for x in right, left in x.field
+    public int left;
+    public int right;
+    public JField field;
 
-    public AllHasConstraint(int left) {
+    public AllHasConstraint(int left, int right, JField field) {
         this.left = left;
-        this.subsets = new ArrayList<>();
-        this.elements = new ArrayList<>();
-    }
-
-    public void addSubset(int subset) {
-        this.subsets.add(subset);
-    }
-
-    public void addElement(int element) {
-        this.elements.add(element);
-    }
-
-    public int getLeft() {
-        return this.left;
-    }
-
-    public List<Integer> getSubsets() {
-        return this.subsets;
-    }
-
-    public List<Integer> getElements() {
-        return this.elements;
+        this.right = right;
+        this.field = field;
     }
 }

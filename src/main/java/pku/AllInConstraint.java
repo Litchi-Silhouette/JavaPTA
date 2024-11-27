@@ -1,20 +1,16 @@
 package pku;
 
-public class AllInConstraint {
-    // for x in left, x in right;
-    private int left;
-    private int right;
+import pascal.taie.language.classes.JField;
 
-    public AllInConstraint(int left, int right) {
+public class AllInConstraint {
+    // for x in right, x field in left
+    public int left;
+    public int right;
+    public JField field;
+
+    public AllInConstraint(int left, int right, JField field) {
         this.left = left;
         this.right = right;
-    }
-
-    public int getLeft() {
-        return this.left;
-    }
-
-    public int getRight() {
-        return this.right;
+        this.field = field;
     }
 }
