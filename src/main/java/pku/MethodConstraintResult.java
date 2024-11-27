@@ -8,15 +8,17 @@ import pascal.taie.ir.IR;
 public class MethodConstraintResult {
     public StandardConstraintSet constraintSet;
     public AbstractVarDomain domain;
+    public AbstractMallocDomain mallocDomain;
     public List<Stmt> leftStmts;
 
-    public MethodConstraintResult() {
+    public MethodConstraintResult(AbstractMallocDomain mallocDomain) {
         this.constraintSet = new StandardConstraintSet();
         this.domain = new AbstractVarDomain();
         this.leftStmts = new ArrayList<>();
+        this.mallocDomain = mallocDomain;
     }
 
     public void analysis(IR ir) {
-        this.leftStmts.add(stmt);
+
     }
 }
