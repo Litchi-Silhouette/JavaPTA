@@ -4,16 +4,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-
+import java.util.List;
 import pku.dataStructures.Graph;
+import pku.constraint.*;
 
 // 注意这里我们允许对“指针”（所有的 left 和 subset）和“可能值”（所有的 Elements）分开编号
 // 但需要保证如果 p 既是指针，又是可能值，则应该在两边使用相同的编号
-// 同时，需要保证在 allhas_constraint，也就是 forall x in p, x contains e 中，p 的所有可能值（"elements"）同时是指针
+// 同时，需要保证在 StandardForallInRight 约束中，Right 的所有可能值都是指针（引用）
+// 类似的，需要保证在 StandardForallInLeft 约束中，Left 的所有可能值都是指针（引用）
 public class StandardConstraintSet {
-    private ArrayList<SimpleConstraint> sim_constraint;
-    private ArrayList<AllInConstraint> allin_constraint;
-    private ArrayList<AllHasConstraint> allhas_constraint;
+    public List<StandardSimple> sim_constraint;
+    public List<StandardForallInRightSubsetLeft> has_constraint;
+    public List<StandardForallInLeftContainsRight> in_constraint;
     private int node_index;  // 图的节点是每个集合，对每个集合编号
     private HashMap<Integer, Integer> var_to_index; // 变量编号到图节点编号的映射
     private HashMap<Integer, Integer> element_to_index; // 元素编号到图节点编号的映射
@@ -21,8 +23,8 @@ public class StandardConstraintSet {
     private LinkedList<edge> active_edges;   // 存储活跃边
     public StandardConstraintSet() {
         sim_constraint = new ArrayList<>();
-        allin_constraint = new ArrayList<>();
-        allhas_constraint = new ArrayList<>();
+        has_constraint = new ArrayList<>();
+        in_constraint = new ArrayList<>();
         var_to_index = new HashMap<>();
         element_to_index = new HashMap<>();
         active_edges = new LinkedList<>();
@@ -34,7 +36,6 @@ public class StandardConstraintSet {
         if (!var_to_index.containsKey(var_index)) {
             var_to_index.put(var_index, node_index);
             graph.addVertex(node_index);
-
             node_index++;
         }
         return var_to_index.get(var_index);
@@ -50,16 +51,16 @@ public class StandardConstraintSet {
         return element_to_index.get(element_index);
     }
     // 加入时自动构建图
-    public void addSimpleConstraint(SimpleConstraint sc) {
+    public void addSimpleConstraint(StandardSimple sc) {
         sim_constraint.add(sc);
-        int left = sc.getLeft();
+        int left = sc.left;
         int left_graph_index = get_node_index_from_var_index(left);
-        for (int subset : sc.getSubsets()) {
+        for (int subset : sc.subsets) {
             int subset_graph_index = get_node_index_from_var_index(subset);
             // 如果 subset 是 left 的子集，就从 subset 指向 left 连边
             graph.addEdge(subset_graph_index, left_graph_index, 0);
         }
-        for (int element : sc.getElements()) {
+        for (int element : sc.elements) {
             int element_graph_index = get_node_index_from_element_index(element);
             // 如果 element 在 left 中，就从 element 指向 left 连边，同时令其活跃
             graph.addEdge(element_graph_index, left_graph_index, 1);
@@ -68,16 +69,15 @@ public class StandardConstraintSet {
         }
     }
     // 由于迭代时才使用，不更新图
-    public void addAllInConstraint(AllInConstraint aic) {
-        allin_constraint.add(aic);
+    public void addStandardForallInRightSubsetLeftConstraint(StandardForallInRightSubsetLeft shc) {
+        has_constraint.add(shc);
     }
-
     // 由于迭代时才使用，不更新图
-    public void addAllHasConstraint(AllHasConstraint ahc) {
-        allhas_constraint.add(ahc);
+    public void addStandardForallInLeftContainsRightConstraint(StandardForallInLeftContainsRight sic) {
+        in_constraint.add(sic);
     }
 
-    private class edge {
+    private static class edge {
         int from;
         int to;
         public edge(int from, int to) {
@@ -115,51 +115,41 @@ public class StandardConstraintSet {
                 }
 
             }
-            for (AllInConstraint inConstraint : allin_constraint) {
-                // 处理 forall x in left, x contains in right;
-                int left = inConstraint.getLeft();
+            for (StandardForallInLeftContainsRight inConstraint : in_constraint) {
+                // 处理 forall x in left, right subset f(x)
+                int left = inConstraint.left;
                 int left_graph_index = get_node_index_from_var_index(left);
                 if (!effected_nodes.contains(left_graph_index)) {
-                    // 如果本轮中 left 没有更新，就不用更新
+                    // 如果本轮中 left 没有更新，就添加新边
                     continue;
                 }
-                int right = inConstraint.getRight();
+                int right = inConstraint.right;
                 int right_graph_index = get_node_index_from_var_index(right);
-                HashSet<Integer> possible_object_vars = graph.getInfo(left_graph_index);
-                for (int x : possible_object_vars) {
-                    int x_graph_index = get_node_index_from_var_index(x);
-                    if (graph.isSameVertex(left_graph_index, x_graph_index)) {
-                        // 不考虑自环
-                        continue;
+                for (int x : graph.getInfo(left_graph_index)) {
+                    int x_field = inConstraint.f.convert(x);
+                    int x_graph_index = get_node_index_from_var_index(x_field);
+                    if (graph.addEdge(right_graph_index,x_graph_index,  1)) {
+                        // 如果不是自环，就从 right_graph_index 指向 x_graph_index，同时令其活跃
+                        active_edges.add(new edge(right_graph_index, x_graph_index));
                     }
-                    // 否则从 x_graph_index 指向 right_graph_index，同时令其活跃
-                    graph.addEdge(x_graph_index, right_graph_index, 1);
-                    active_edges.add(new edge(x_graph_index, right_graph_index));
                 }
             }
-            for (AllHasConstraint hasConstraint : allhas_constraint) {
-                // 处理 forall x in left, x contains e;
-                int left = hasConstraint.getLeft();
+            for (StandardForallInRightSubsetLeft hasConstraint : has_constraint) {
+                // 处理 for x in right, f(x) subset left
+                int left = hasConstraint.left;
                 int left_graph_index = get_node_index_from_var_index(left);
-                if (!effected_nodes.contains(left_graph_index)) {
-                    // 如果本轮中 left 没有更新，就不用更新
+                int right = hasConstraint.right;
+                int right_graph_index = get_node_index_from_var_index(right);
+                if (!effected_nodes.contains(right_graph_index)) {
+                    // 如果本轮中 left 没有更新，就不用添加新边
                     continue;
                 }
-                HashSet<Integer> possible_objects = graph.getInfo(left_graph_index);
-                for (int possible_object : possible_objects) {
-                    int possible_object_graph_index = get_node_index_from_var_index(possible_object);
-                    for (int e : hasConstraint.getElements()) {
-                        int e_graph_index = get_node_index_from_element_index(e);
-                        // 由于单点集不会和元素的可能指向集处在同一个连通分支，因此不会产生自环
-                        graph.addEdge(e_graph_index, possible_object_graph_index, 1);
-                        active_edges.add(new edge(e_graph_index, possible_object_graph_index));
-                    }
-                    for (int var : hasConstraint.getSubsets()) {
-                        int var_graph_index = get_node_index_from_var_index(var);
-                        if (graph.addEdge(var_graph_index, left_graph_index, 1))
-                        {
-                            active_edges.add(new edge(var_graph_index, left_graph_index));
-                        }
+                for (int x : graph.getInfo(right_graph_index)) {
+                    int x_field = hasConstraint.f.convert(x);
+                    int x_field_graph_index = get_node_index_from_var_index(x_field);
+                    if (graph.addEdge(x_field_graph_index, left_graph_index, 1)) {
+                        // 如果不是自环，就从 x_field_graph_index 指向 left_graph_index，同时令其活跃
+                        active_edges.add(new edge(x_field_graph_index, left_graph_index));
                     }
                 }
             }

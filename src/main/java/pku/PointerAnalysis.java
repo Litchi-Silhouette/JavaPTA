@@ -1,8 +1,11 @@
 package pku;
 
+import static pku.PointerAnalysisTrivial.logger;
+
 import pascal.taie.World;
 import pascal.taie.analysis.ProgramAnalysis;
 import pascal.taie.config.AnalysisConfig;
+import pku.abs.*;
 
 public class PointerAnalysis extends PointerAnalysisTrivial {
     public static final String ID = "pku-pta";
@@ -15,6 +18,7 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
     public PointerAnalysisResult analyze() {
         var result = new PointerAnalysisResult();
         var preprocess = new PreprocessResult();
+        var domain = new AbstractVarDomain();
         var world = World.get();
         var main = world.getMainMethod();
         var jclass = main.getDeclaringClass();
@@ -27,10 +31,18 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
         // As for when and how you enter one method,
         // it's your analysis assignment to accomplish
 
-        // create domain
-        // add all variables to domain
-        // generate constraints
-        // solve constraints
+        world.getClassHierarchy().applicationClasses().forEach(tjclass -> {
+            tjclass.getDeclaredFields().forEach(field -> {
+                if (field.isStatic()) {
+                    domain.addField(new AbstractVar(0, null, field));
+                }
+            });
+
+            tjclass.getDeclaredMethods().forEach(method -> {
+                if (!method.isAbstract())
+                    preprocess.analysis(method.getIR());
+            });
+        });
 
         return super.analyze();
         // return result;

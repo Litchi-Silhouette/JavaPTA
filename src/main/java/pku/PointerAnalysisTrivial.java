@@ -1,6 +1,5 @@
 package pku;
 
-
 import java.io.*;
 import java.util.TreeSet;
 
@@ -11,7 +10,6 @@ import pascal.taie.World;
 import pascal.taie.analysis.ProgramAnalysis;
 import pascal.taie.analysis.misc.IRDumper;
 import pascal.taie.config.AnalysisConfig;
-
 
 public class PointerAnalysisTrivial extends ProgramAnalysis<PointerAnalysisResult> {
     public static final String ID = "pku-pta-trivial";
@@ -35,17 +33,17 @@ public class PointerAnalysisTrivial extends ProgramAnalysis<PointerAnalysisResul
         var preprocess = new PreprocessResult();
         var result = new PointerAnalysisResult();
 
-        World.get().getClassHierarchy().applicationClasses().forEach(jclass->{
+        World.get().getClassHierarchy().applicationClasses().forEach(jclass -> {
             logger.info("Analyzing class {}", jclass.getName());
-            jclass.getDeclaredMethods().forEach(method->{
-                if(!method.isAbstract())
+            jclass.getDeclaredMethods().forEach(method -> {
+                if (!method.isAbstract())
                     preprocess.analysis(method.getIR());
             });
         });
 
-        var objs = new TreeSet<>(preprocess.obj_ids.values());
+        var objs = new TreeSet<>(preprocess.mallocDomain.mallocs);
 
-        preprocess.test_pts.forEach((test_id, pt)->{
+        preprocess.test_pts.forEach((test_id, pt) -> {
             result.put(test_id, objs);
         });
 
