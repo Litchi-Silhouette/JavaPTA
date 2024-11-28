@@ -116,7 +116,7 @@ public class MethodConstraintResult {
                 if (fieldaccess instanceof StaticFieldAccess)
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(fieldId, srcId));
                 else
-                    constraintSet.addAllHasConstraint(new AllHasConstraint(srcId, fieldId, field));
+                    constraintSet.addAllHasConstraint(new AllHasConstraint(fieldId, srcId, field));
             } else if (stmt instanceof LoadArray) {
                 var dst = ((LoadArray) stmt).getLValue();
                 var array = ((LoadArray) stmt).getArrayAccess();
