@@ -2,6 +2,7 @@ package pku.abs;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import pascal.taie.language.type.Type;
 
 public class AbstractMallocDomain {
@@ -12,6 +13,7 @@ public class AbstractMallocDomain {
     public AbstractMallocDomain() {
         index2malloc = new HashMap<>();
         malloc2index = new HashMap<>();
+        mallocs = new ArrayList<>();
     }
 
     public AbstractMalloc addMalloc(int value, Type type) {
