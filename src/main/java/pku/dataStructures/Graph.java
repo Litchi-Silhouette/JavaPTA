@@ -1,12 +1,13 @@
 package pku.dataStructures;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
 public class Graph <V> {
     // 以 V 为节点类型，Integer 为边标签的有向图
-    // 为了并查集的安全，我们保证出现在 graph_map 和 info_map 的 value 中的值一定是当前并查集的根
+    // 为了并查集的安全，我们保证出现在 graph_map 的 value 中的值一定是当前并查集的根
     private HashMap<V, HashMap<V, Integer>> graph_map; // 图的邻接表
     private UnionFind<V> union_find; // 并查集，用于快速合并
     private HashMap<V, HashSet<Integer>> info_map; // 用于存储节点的信息
@@ -36,10 +37,15 @@ public class Graph <V> {
     public boolean isSameVertex(V vertex1, V vertex2) {
         return union_find.find(vertex1) == union_find.find(vertex2);
     }
-    // 这里我们假设用 0 表示边活跃，用非零表示边不活跃。注意这里我们不检查自环
-    public void addEdge(V from, V to, Integer label) {
+    // 这里我们假设用 0 表示边活跃，用非零表示边不活跃。
+    // 如果是自环，则返回 false 并且不添加边
+    public boolean addEdge(V from, V to, Integer label) {
         V from1 = union_find.find(from);
         V to1 = union_find.find(to);
+        if (from1 == to1) {
+            // 防止自环
+            return false;
+        }
         if (DEBUG && !graph_map.containsKey(from1)) {
             System.out.println("Vertex " + from + " not exists in add info");
         }
@@ -51,6 +57,7 @@ public class Graph <V> {
         if (DEBUG) {
             System.out.println("Add edge from " + from + " to " + to + " with label " + label);
         }
+        return true;
     }
     public void addInfo(V vertex, Integer info) {
         V vertex1 = union_find.find(vertex);
@@ -165,38 +172,43 @@ public class Graph <V> {
         }
     }
     // 从 current 开始，深度优先搜索，找到一个环，将环上的节点合并。 如果 current 不在 path 中，但在 visited 中，说明已经处理过，直接返回
-    public void mergeStrongConnectedComponent(V current, HashSet<V> path, HashSet<V> visited) {
-        if (path.contains(current)) {
-            // 如果当前节点已经在路径中，说明路径上的节点构成了一个强连通分量
-            if (DEBUG) {
-                System.out.println("find strong connected component:");
-                for (V vertex : path) {
-                    System.out.println(vertex);
+    public void mergeStrongConnectedComponent(V current, ArrayList<V> path, HashSet<V> visited) {
+        boolean merging = false;
+        ArrayList<V> new_path = new ArrayList<>(path.size());
+        for (V node : path) {
+            if (node == current) {
+                // 如果当前节点已经在路径中，说明路径中该点之后的节点构成了一个强连通分量
+                merging = true;
+                System.out.print("find strong connected component:");
+            }
+            if (merging){
+                if (DEBUG) {
+                    System.out.print(node + " ");
                 }
+                merge(current, node);
+
             }
-            Iterator<V> iterator = path.iterator();
-            V start = iterator.next();
-            while (iterator.hasNext()) {
-                V next = iterator.next();
-                merge(start, next);
+            else{
+                new_path.add(node);
             }
-            path = new HashSet<>(); // 因为已经全部合并，因此可以清空路径，防止重复合并
         }
-        if (visited.contains(current)) {
-            return;
-        }
+        path = new_path; // 路径中上一次该节点出现知乎的节点已经全部合并，只留前面的节点（和当前节点）
         visited.add(current);
         path.add(current);
         HashMap<V, Integer> edges = getEdges(current);
         for (V next : edges.keySet()) {
-            mergeStrongConnectedComponent(next, path, visited);
+            mergeStrongConnectedComponent(next, path, visited); // 最终所有的环应当被合并，因此递归是终止的
         }
     }
     public void mergeStrongConnectedComponentAll () {
         HashSet<V> visited = new HashSet<>();
         // 由于循环中并查集一直在改变，不能使用 getVerticesIterator，因此这里直接遍历原始序号
         for (V node : graph_map.keySet()) {
-            mergeStrongConnectedComponent(node, new HashSet<>(), visited);
+            V node1 = union_find.find(node);
+            if (visited.contains(node1)) {
+                continue;
+            }
+            mergeStrongConnectedComponent(node1, new ArrayList<>(), visited);
         }
     }
 }

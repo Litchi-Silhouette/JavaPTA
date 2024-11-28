@@ -1,5 +1,6 @@
 package pku;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,7 @@ public class GraphTestPKU {
         assert graph.getEdge(1, 2) == 0;
         assert graph.getEdge(2, 3) == 0;
         assert graph.getEdge(3, 1) == 1;
-        graph.mergeStrongConnectedComponent(1, new HashSet<>(), new HashSet<>());
+        graph.mergeStrongConnectedComponent(1, new ArrayList<>(), new HashSet<>());
         assert graph.getEdges(1) == graph.getEdges(2);
         assert graph.getEdges(2) == graph.getEdges(3);
     }

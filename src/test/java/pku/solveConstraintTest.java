@@ -16,10 +16,10 @@ public class solveConstraintTest {
         SimpleConstraint sc_p = new SimpleConstraint(1);
         sc_p.addSubset(0);  // o subset p
         SimpleConstraint sc_q = new SimpleConstraint(2);
-        sc_q.addSubset(1);  // p in q
+        sc_q.addElement(1);  // p in q
         AllInConstraint aic = new AllInConstraint(2, 1);    // forall x in q, x subset p
         AllHasConstraint ahc = new AllHasConstraint(2);
-        ahc.addElement(2); // w in q
+        ahc.addElement(2); // forall v in q, w in v
         System.out.println(sc_o);
         System.out.println(sc_p);
         System.out.println(aic);

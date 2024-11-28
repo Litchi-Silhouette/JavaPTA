@@ -7,6 +7,9 @@ import java.util.LinkedList;
 
 import pku.dataStructures.Graph;
 
+// 注意这里我们允许对“指针”（所有的 left 和 subset）和“可能值”（所有的 Elements）分开编号
+// 但需要保证如果 p 既是指针，又是可能值，则应该在两边使用相同的编号
+// 同时，需要保证在 allhas_constraint，也就是 forall x in p, x contains e 中，p 的所有可能值（"elements"）同时是指针
 public class StandardConstraintSet {
     private ArrayList<SimpleConstraint> sim_constraint;
     private ArrayList<AllInConstraint> allin_constraint;
@@ -101,15 +104,16 @@ public class StandardConstraintSet {
                 {
                     is_stable = false;
                     effected_nodes.add(to);
-                }
-                HashMap<Integer, Integer> edges = graph.getEdges(to);
-                for (int next : edges.keySet()) {
-                    if (edges.get(next) == 0) {
-                        active_edges.add(new edge(to, next));
-                        // 由于 to -> next 的边一定在邻接表中，不会修改迭代器产生 undefined behavior
-                        graph.addEdge(to, next, 1);
+                    HashMap<Integer, Integer> edges = graph.getEdges(to);
+                    for (int next : edges.keySet()) {
+                        if (edges.get(next) == 0) {
+                            active_edges.add(new edge(to, next));
+                            // 由于 to -> next 的边一定在邻接表中，不会修改迭代器产生 undefined behavior
+                            graph.addEdge(to, next, 1);
+                        }
                     }
                 }
+
             }
             for (AllInConstraint inConstraint : allin_constraint) {
                 // 处理 forall x in left, x contains in right;
@@ -121,9 +125,9 @@ public class StandardConstraintSet {
                 }
                 int right = inConstraint.getRight();
                 int right_graph_index = get_node_index_from_var_index(right);
-                HashSet<Integer> possible_objects = graph.getInfo(left_graph_index);
-                for (int x : possible_objects) {
-                    int x_graph_index = get_node_index_from_element_index(x);
+                HashSet<Integer> possible_object_vars = graph.getInfo(left_graph_index);
+                for (int x : possible_object_vars) {
+                    int x_graph_index = get_node_index_from_var_index(x);
                     if (graph.isSameVertex(left_graph_index, x_graph_index)) {
                         // 不考虑自环
                         continue;
@@ -143,17 +147,25 @@ public class StandardConstraintSet {
                 }
                 HashSet<Integer> possible_objects = graph.getInfo(left_graph_index);
                 for (int possible_object : possible_objects) {
+                    int possible_object_graph_index = get_node_index_from_var_index(possible_object);
                     for (int e : hasConstraint.getElements()) {
                         int e_graph_index = get_node_index_from_element_index(e);
-                        int possible_object_graph_index = get_node_index_from_element_index(possible_object);
                         // 由于单点集不会和元素的可能指向集处在同一个连通分支，因此不会产生自环
                         graph.addEdge(e_graph_index, possible_object_graph_index, 1);
                         active_edges.add(new edge(e_graph_index, possible_object_graph_index));
+                    }
+                    for (int var : hasConstraint.getSubsets()) {
+                        int var_graph_index = get_node_index_from_var_index(var);
+                        if (graph.addEdge(var_graph_index, left_graph_index, 1))
+                        {
+                            active_edges.add(new edge(var_graph_index, left_graph_index));
+                        }
                     }
                 }
             }
         }
     }
+    // 尽管实现细节上，图节点编号可能和原始编号不同，但此方法输入输出都是原始编号
     public HashSet<Integer> getInfo(Integer var){
         return graph.getInfo(get_node_index_from_var_index(var));
     }
