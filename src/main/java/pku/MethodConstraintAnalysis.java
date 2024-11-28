@@ -3,6 +3,7 @@ package pku;
 import pascal.taie.analysis.MethodAnalysis;
 import pascal.taie.config.AnalysisConfig;
 import pascal.taie.ir.IR;
+import pku.abs.AbstractVarDomain;
 
 public class MethodConstraintAnalysis extends MethodAnalysis<MethodConstraintResult> {
     public static final String ID = "pku-pta-method-constraint";

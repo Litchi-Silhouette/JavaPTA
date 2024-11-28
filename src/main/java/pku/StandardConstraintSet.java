@@ -3,32 +3,28 @@ package pku;
 import java.util.List;
 import java.util.ArrayList;
 
+import pku.constraint.*;
+
 public class StandardConstraintSet {
-    public List<SimpleEConstraint> sime_constraint;
-    public List<SimpleSConstraint> sims_constraint;
-    public List<AllInConstraint> allin_constraint;
-    public List<AllHasConstraint> allhas_constraint;
+    public List<StandardSimple> sim_constraint;
+    public List<StandardHas> has_constraint;
+    public List<StandardIn> in_constraint;
 
     public StandardConstraintSet() {
-        sime_constraint = new ArrayList<>();
-        sims_constraint = new ArrayList<>();
-        allin_constraint = new ArrayList<>();
-        allhas_constraint = new ArrayList<>();
+        sim_constraint = new ArrayList<>();
+        has_constraint = new ArrayList<>();
+        in_constraint = new ArrayList<>();
     }
 
-    public void addSimpleEConstraint(SimpleEConstraint sec) {
-        sime_constraint.add(sec);
+    public void addSimpleConstraint(StandardSimple sec) {
+        sim_constraint.add(sec);
     }
 
-    public void addSimpleSConstraint(SimpleSConstraint ssc) {
-        sims_constraint.add(ssc);
+    public void addHasConstraint(StandardHas shc) {
+        has_constraint.add(shc);
     }
 
-    public void addAllInConstraint(AllInConstraint aic) {
-        allin_constraint.add(aic);
-    }
-
-    public void addAllHasConstraint(AllHasConstraint ahc) {
-        allhas_constraint.add(ahc);
+    public void addInConstraint(StandardIn sic) {
+        in_constraint.add(sic);
     }
 }

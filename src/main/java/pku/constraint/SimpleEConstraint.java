@@ -1,4 +1,4 @@
-package pku;
+package pku.constraint;
 
 public class SimpleEConstraint {
     public int left;

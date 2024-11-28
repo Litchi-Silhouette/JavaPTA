@@ -5,6 +5,7 @@ import static pku.PointerAnalysisTrivial.logger;
 import pascal.taie.World;
 import pascal.taie.analysis.ProgramAnalysis;
 import pascal.taie.config.AnalysisConfig;
+import pku.abs.*;
 
 public class PointerAnalysis extends PointerAnalysisTrivial {
     public static final String ID = "pku-pta";

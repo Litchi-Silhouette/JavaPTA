@@ -1,4 +1,4 @@
-package pku;
+package pku.abs;
 
 import java.util.HashMap;
 
