@@ -4,9 +4,12 @@ import java.util.List;
 import java.util.ArrayList;
 import pascal.taie.ir.stmt.*;
 import pascal.taie.language.classes.JField;
+import pascal.taie.language.classes.JMethod;
 import pascal.taie.language.type.*;
 import pascal.taie.ir.IR;
 import pascal.taie.ir.exp.InstanceFieldAccess;
+import pascal.taie.ir.exp.IntLiteral;
+import pascal.taie.ir.exp.InvokeStatic;
 import pascal.taie.ir.exp.StaticFieldAccess;
 import pku.abs.*;
 import pku.constraint.*;
@@ -14,14 +17,14 @@ import pku.constraint.*;
 public class MethodConstraintResult {
     public ConstraintSet constraintSet;
     public AbstractVarDomain domain;
-    public List<Stmt> leftStmts;
     public final PreprocessResult preprocess;
+    public List<Invoke> invokeStmts; // all invoke statements in the method
 
     public MethodConstraintResult(PreprocessResult preprocess, AbstractVarDomain domain) {
         this.constraintSet = new ConstraintSet();
         this.domain = domain.clone();
-        this.leftStmts = new ArrayList<>();
         this.preprocess = preprocess;
+        this.invokeStmts = new ArrayList<Invoke>();
     }
 
     public Boolean checkRef(Type src, Type dst) {
@@ -31,13 +34,15 @@ public class MethodConstraintResult {
         return false;
     }
 
-    public void analysis(IR ir) {
+    public void analysis(Context context) {
+        IR ir = context.getIR();
         var stmts = ir.getStmts();
+        int currentContextId = context.hashCode();
         for (var stmt : stmts) {
             if (stmt instanceof New) {
-                int malloc = preprocess.objs.get(stmt).count;
+                int malloc = preprocess.objs.get(stmt).contextID;
                 var value = ((New) stmt).getLValue();
-                AbstractVar var = new AbstractVar(0, value, null);
+                AbstractVar var = new AbstractVar(currentContextId, value, null);
                 var id = domain.checkAndAdd(var);
                 constraintSet.addSimpleEConstraint(new SimpleEConstraint(id, malloc));
             } else if (stmt instanceof AssignLiteral) {
@@ -48,8 +53,8 @@ public class MethodConstraintResult {
                 if (!checkRef(src.getType(), dst.getType())) {
                     continue;
                 }
-                var srcVar = new AbstractVar(0, src, null);
-                var dstVar = new AbstractVar(0, dst, null);
+                var srcVar = new AbstractVar(currentContextId, src, null);
+                var dstVar = new AbstractVar(currentContextId, dst, null);
                 var dstId = domain.checkAndAdd(dstVar);
                 var srcId = domain.getVarIndex(srcVar);
                 if (srcId == -1) {
@@ -67,16 +72,16 @@ public class MethodConstraintResult {
                     if (!checkRef(field.getType(), dst.getType())) {
                         continue;
                     }
-                    fieldVar = new AbstractVar(0, null, field);
+                    fieldVar = new AbstractVar(currentContextId, null, field);
                 } else {
                     var base = ((InstanceFieldAccess) fieldaccess).getBase();
                     field = ((InstanceFieldAccess) fieldaccess).getFieldRef().resolve();
                     if (!checkRef(field.getType(), dst.getType())) {
                         continue;
                     }
-                    fieldVar = new AbstractVar(0, base, null);
+                    fieldVar = new AbstractVar(currentContextId, base, null);
                 }
-                AbstractVar dstvar = new AbstractVar(0, dst, null);
+                AbstractVar dstvar = new AbstractVar(currentContextId, dst, null);
                 int dstId = domain.checkAndAdd(dstvar);
                 int fieldId = domain.getVarIndex(fieldVar);
                 if (fieldId == -1) {
@@ -97,16 +102,16 @@ public class MethodConstraintResult {
                     if (!checkRef(field.getType(), src.getType())) {
                         continue;
                     }
-                    fieldVar = new AbstractVar(0, null, field);
+                    fieldVar = new AbstractVar(currentContextId, null, field);
                 } else {
                     var base = ((InstanceFieldAccess) fieldaccess).getBase();
                     field = ((InstanceFieldAccess) fieldaccess).getFieldRef().resolve();
                     if (!checkRef(field.getType(), src.getType())) {
                         continue;
                     }
-                    fieldVar = new AbstractVar(0, base, null);
+                    fieldVar = new AbstractVar(currentContextId, base, null);
                 }
-                AbstractVar srcvar = new AbstractVar(0, src, null);
+                AbstractVar srcvar = new AbstractVar(currentContextId, src, null);
                 int srcId = domain.checkAndAdd(srcvar);
                 int fieldId = domain.getVarIndex(fieldVar);
                 if (fieldId == -1) {
@@ -125,8 +130,8 @@ public class MethodConstraintResult {
                 if (!checkRef(base.getType(), dst.getType())) {
                     continue;
                 }
-                AbstractVar dstvar = new AbstractVar(0, dst, null);
-                AbstractVar basevar = new AbstractVar(0, base, null);
+                AbstractVar dstvar = new AbstractVar(currentContextId, dst, null);
+                AbstractVar basevar = new AbstractVar(currentContextId, base, null);
                 int dstId = domain.checkAndAdd(dstvar);
                 int baseId = domain.getVarIndex(basevar);
                 if (baseId == -1) {
@@ -142,8 +147,8 @@ public class MethodConstraintResult {
                 if (!checkRef(base.getType(), src.getType())) {
                     continue;
                 }
-                AbstractVar srcvar = new AbstractVar(0, src, null);
-                AbstractVar basevar = new AbstractVar(0, base, null);
+                AbstractVar srcvar = new AbstractVar(currentContextId, src, null);
+                AbstractVar basevar = new AbstractVar(currentContextId, base, null);
                 int baseId = domain.checkAndAdd(basevar);
                 int srcId = domain.getVarIndex(srcvar);
                 if (srcId == -1) {
@@ -160,9 +165,17 @@ public class MethodConstraintResult {
             } else if (stmt instanceof Cast) {
                 continue;
             } else if (stmt instanceof Invoke) {
-                leftStmts.add(stmt);
+                var exp = ((Invoke) stmt).getInvokeExp();
+                if (exp instanceof InvokeStatic) {
+                    var methodRef = ((InvokeStatic) exp).getMethodRef();
+                    var className = methodRef.getDeclaringClass().getName();
+                    if (className.equals("benchmark.internal.Benchmark") || className.equals("benchmark.internal.BenchmarkN")) {
+                        continue; // ignore alloc and test when analyzing
+                    }
+                }
+                invokeStmts.add((Invoke) stmt);
             } else if (stmt instanceof Return) {
-                leftStmts.add(stmt);
+                continue;
             } else if (stmt instanceof If) {
                 continue;
             } else if (stmt instanceof Goto) {
