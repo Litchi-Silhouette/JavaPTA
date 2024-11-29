@@ -31,4 +31,11 @@ public class ConstraintSet {
     public void addAllHasConstraint(AllHasConstraint ahc) {
         allhas_constraint.add(ahc);
     }
+
+    public void addConstraintSet(ConstraintSet cs) {
+        sime_constraint.addAll(cs.sime_constraint);
+        sims_constraint.addAll(cs.sims_constraint);
+        allin_constraint.addAll(cs.allin_constraint);
+        allhas_constraint.addAll(cs.allhas_constraint);
+    }
 }
