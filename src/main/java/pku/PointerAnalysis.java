@@ -25,8 +25,8 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
     public PointerAnalysisResult analyze() {
         var PTAresult = new PointerAnalysisResult();
         var preprocess = new PreprocessResult();
-        var result = new InterproceduralConstraintResult();
-        var domain = new AbstractVarDomain();
+        var interproceduralConstraintResult = new InterproceduralConstraintResult();
+        var globalDomain = new AbstractVarDomain();
         var world = World.get();
         var main = world.getMainMethod();
         var jclass = main.getDeclaringClass();
@@ -34,18 +34,10 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
         List<Integer> visited = new ArrayList<>();
         
 
-        // TODO
-        // You need to use `preprocess` like in PointerAnalysisTrivial
-        // when you enter one method to collect infomation given by
-        // Benchmark.alloc(id) and Benchmark.test(id, var)
-        //
-        // As for when and how you enter one method,
-        // it's your analysis assignment to accomplish
-
         world.getClassHierarchy().applicationClasses().forEach(tjclass -> {
             tjclass.getDeclaredFields().forEach(field -> {
                 if (field.isStatic()) {
-                    domain.addField(new AbstractVar(0, null, field));
+                    globalDomain.addField(new AbstractVar(0, null, field));
                 }
             });
 
@@ -55,13 +47,12 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                 Context context = new Context(null, method.getIR());
                 int currentContextId = context.hashCode();
 
-                // domain and preprocess continually updated
-                var mcr = new MethodConstraintResult(preprocess, domain);
+                // globalDomain and preprocess continually updated
+                var mcr = new MethodConstraintResult(preprocess, globalDomain);
                 System.out.println("Context: " + context.getName() + " " + currentContextId);
                 mcr.analysis(context);
 
-                // add all invoke contexts to worklist and add interprocedual constraints
-                result.addInterprocedualConstraint(mcr, currentContextId, workList);
+                interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
             });
         });
         
@@ -76,12 +67,11 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
             }
 
             // domain and preprocess continually updated
-            var mcr = new MethodConstraintResult(preprocess, domain);
+            var mcr = new MethodConstraintResult(preprocess, globalDomain);
             System.out.println("Context: " + context.getName() + " " + currentContextId);
             mcr.analysis(context);
 
-            // add all invoke contexts to worklist and add interprocedual constraints
-            result.addInterprocedualConstraint(mcr, currentContextId, workList);
+            interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
         }
 
         return super.analyze();
