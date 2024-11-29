@@ -6,14 +6,14 @@ import pascal.taie.language.classes.JField;
 import pascal.taie.language.classes.JMethod;
 
 public class AbstractVar {
-    public int count;
+    public int contextID;
     public Var value;
     public JField field;
     public JClass clazz;
     public JMethod method;
 
-    public AbstractVar(int count, Var value, JField field) {
-        this.count = count;
+    public AbstractVar(int ctx, Var value, JField field) {
+        this.contextID = ctx;
         this.value = value;
         this.field = field;
         if (value != null) {
@@ -29,8 +29,17 @@ public class AbstractVar {
     public boolean equals(Object obj) {
         if (obj instanceof AbstractVar) {
             AbstractVar other = (AbstractVar) obj;
-            return this.count == other.count
+            return this.contextID == other.contextID
                     && (this.value == null && other.value == null || this.value.equals(other.value)) &&
+                    (this.field == null && other.field == null || this.field.equals(other.field));
+        }
+        return false;
+    }
+
+    public boolean equalsWithoutContext(Object obj) {
+        if (obj instanceof AbstractVar) {
+            AbstractVar other = (AbstractVar) obj;
+            return (this.value == null && other.value == null || this.value.equals(other.value)) &&
                     (this.field == null && other.field == null || this.field.equals(other.field));
         }
         return false;
@@ -43,7 +52,7 @@ public class AbstractVar {
             var className = this.clazz.getName();
             var methodName = this.method.getName();
             name = className + "." + methodName +
-                    "#" + this.count + "#" + this.value.getName();
+                    "#" + this.contextID + "#" + this.value.getName();
             if (this.field != null) {
                 name += "." + this.field.getName();
             }
