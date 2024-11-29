@@ -1,9 +1,10 @@
-package pku;
+package pku.constraint;
 
 import pascal.taie.language.classes.JField;
 
 public class AllHasConstraint {
-    // for x in right, left in x.field
+    // for x in left, right in x.field
+    // left.field = right
     public int left;
     public int right;
     public JField field;

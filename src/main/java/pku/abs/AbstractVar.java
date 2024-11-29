@@ -1,4 +1,4 @@
-package pku;
+package pku.abs;
 
 import pascal.taie.ir.exp.Var;
 import pascal.taie.language.classes.JClass;

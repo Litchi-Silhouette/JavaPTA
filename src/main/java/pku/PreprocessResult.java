@@ -10,6 +10,7 @@ import pascal.taie.ir.stmt.Invoke;
 import pascal.taie.ir.stmt.New;
 
 import java.util.Map;
+import pku.abs.*;
 
 public class PreprocessResult {
 

@@ -1,4 +1,4 @@
-package pku;
+package pku.abs;
 
 import pascal.taie.language.type.Type;
 

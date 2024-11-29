@@ -5,19 +5,20 @@ import java.util.ArrayList;
 import pascal.taie.ir.stmt.*;
 import pascal.taie.language.classes.JField;
 import pascal.taie.language.type.*;
-import polyglot.ast.Switch;
 import pascal.taie.ir.IR;
 import pascal.taie.ir.exp.InstanceFieldAccess;
 import pascal.taie.ir.exp.StaticFieldAccess;
+import pku.abs.*;
+import pku.constraint.*;
 
 public class MethodConstraintResult {
-    public StandardConstraintSet constraintSet;
+    public ConstraintSet constraintSet;
     public AbstractVarDomain domain;
     public List<Stmt> leftStmts;
     public final PreprocessResult preprocess;
 
     public MethodConstraintResult(PreprocessResult preprocess, AbstractVarDomain domain) {
-        this.constraintSet = new StandardConstraintSet();
+        this.constraintSet = new ConstraintSet();
         this.domain = domain.clone();
         this.leftStmts = new ArrayList<>();
         this.preprocess = preprocess;
@@ -115,7 +116,7 @@ public class MethodConstraintResult {
                 if (fieldaccess instanceof StaticFieldAccess)
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(fieldId, srcId));
                 else
-                    constraintSet.addAllHasConstraint(new AllHasConstraint(srcId, fieldId, field));
+                    constraintSet.addAllHasConstraint(new AllHasConstraint(fieldId, srcId, field));
             } else if (stmt instanceof LoadArray) {
                 var dst = ((LoadArray) stmt).getLValue();
                 var array = ((LoadArray) stmt).getArrayAccess();
@@ -166,7 +167,7 @@ public class MethodConstraintResult {
                 continue;
             } else if (stmt instanceof Goto) {
                 continue;
-            } else if (stmt instanceof Switch) {
+            } else if (stmt instanceof SwitchStmt) {
                 continue;
             } else if (stmt instanceof Monitor) {
                 continue;
