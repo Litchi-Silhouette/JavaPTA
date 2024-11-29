@@ -40,7 +40,7 @@ public class MethodConstraintResult {
         int currentContextId = context.hashCode();
         for (var stmt : stmts) {
             if (stmt instanceof New) {
-                int malloc = preprocess.objs.get(stmt).contextID;
+                int malloc = preprocess.objs.get(stmt).count;
                 var value = ((New) stmt).getLValue();
                 AbstractVar var = new AbstractVar(currentContextId, value, null);
                 var id = domain.checkAndAdd(var);
