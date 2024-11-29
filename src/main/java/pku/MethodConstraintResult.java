@@ -22,7 +22,7 @@ public class MethodConstraintResult {
 
     public MethodConstraintResult(PreprocessResult preprocess, AbstractVarDomain domain) {
         this.constraintSet = new ConstraintSet();
-        this.domain = domain.clone();
+        // this.domain = domain.clone(); 
         this.preprocess = preprocess;
         this.invokeStmts = new ArrayList<Invoke>();
     }
