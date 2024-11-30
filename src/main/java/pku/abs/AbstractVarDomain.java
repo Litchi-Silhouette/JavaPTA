@@ -1,14 +1,18 @@
 package pku.abs;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import pascal.taie.language.type.ClassType;
 import pascal.taie.language.classes.JField;
 import pascal.taie.language.type.ArrayType;
+import pascal.taie.ir.exp.Var;
 
 public class AbstractVarDomain {
     public HashMap<Integer, AbstractVar> index2name;
     public HashMap<AbstractVar, Integer> name2index;
+    public HashMap<Var, List<Integer>> var2indexs;
 
     public AbstractVarDomain() {
         index2name = new HashMap<>();
@@ -43,11 +47,23 @@ public class AbstractVarDomain {
         return -1;
     }
 
-    public Integer addElement(AbstractVar name) {
-        if (!name2index.containsKey(name)) {
+    public Integer addElement(AbstractVar absVar) {
+        
+        // check if the element is already in the domain
+        if (!name2index.containsKey(absVar)) {
             int index = name2index.size();
-            name2index.put(name, index);
-            index2name.put(index, name);
+            name2index.put(absVar, index);
+            index2name.put(index, absVar);
+
+            // get all the ids corresponding to the value
+            List<Integer> ids = var2indexs.containsKey(absVar.value) ? var2indexs.get(absVar.value) : new ArrayList<>();
+            
+            // check if the id is already in the list
+            if (!ids.contains(name2index.get(absVar))) {
+                ids.add(name2index.get(absVar));
+                // update var2indexs with new id corresponding to the value
+                var2indexs.put(absVar.value, ids);
+            }
             return index;
         }
         return -1;
@@ -58,6 +74,14 @@ public class AbstractVarDomain {
         if (id == null)
             return -1;
         return id;
+    }
+
+    public List<Integer> getIndexsByValue(Var value) {
+        List<Integer> ids = var2indexs.containsKey(value)? var2indexs.get(value): null;
+        if (ids == null) {
+            System.err.println("No such value in domain: " + value.getName());
+        }
+        return ids;
     }
 
     public Integer checkAndAdd(AbstractVar name) {
