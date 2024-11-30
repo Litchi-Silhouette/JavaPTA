@@ -28,8 +28,8 @@ public class InterproceduralConstraintResult {
     public ConstraintSet constraintSet;
 
     public InterproceduralConstraintResult() {
-        resolveTable = Maps.newTwoKeyMap();
-        constraintSet = new ConstraintSet();
+        this.resolveTable = Maps.newTwoKeyMap();
+        this.constraintSet = new ConstraintSet();
     }
 
     /**
@@ -48,18 +48,61 @@ public class InterproceduralConstraintResult {
 
         for (Invoke invoke : mcr.invokeStmts) {
             InvokeExp invokeExp = invoke.getInvokeExp();
+            boolean isInstance = invokeExp instanceof InvokeInstanceExp ? true : false;
+            int baseVarId = -1;
+
+            // add constraints for the `base.f()` expression
+            // let this = base
+            if (isInstance) {
+                Var base = ((InvokeInstanceExp) invokeExp).getBase();
+                var baseVar = new AbstractVar(callerContextId, base, null);
+                baseVarId = domain.getVarIndex(baseVar);
+                if (baseVarId == -1) {
+                    System.err.println("baseVar not defined: " + baseVar);
+                    baseVarId = domain.addVar(baseVar);
+                }
+            }
+
+            Var result = invoke.getResult();
+            if (result != null) {
+                var resultVar = new AbstractVar(callerContextId, result, null);
+                var resultId = domain.getVarIndex(resultVar);
+                if (resultId == -1) {
+                    System.err.println("resultVar not defined: " + resultVar);
+                    resultId = domain.addVar(resultVar);
+                }
+            }
             
             // resolve the target methods
             Set<JMethod> targetMethods = resolveTargetMethods(invokeExp);
             for (JMethod targetMethod : targetMethods) {
                 // for each target method, create a new context and add it to the worklist
                 IR ir = targetMethod.getIR();
+                if (ir == null) {
+                    System.err.println("IR not found for method: " + targetMethod.getName());
+                    continue;
+                }
+                
                 Context invokeContext = new Context(invoke, ir);
                 int calleeContextId = invokeContext.hashCode();
                 workList.add(invokeContext);
 
                 // add constraints for the invoke statement
-                // add constraints for the arguments: paramVar <- argVar
+
+                // 1. add constraints for this = base
+                if (isInstance && ir.getThis() != null) {
+                    var thisVar = new AbstractVar(calleeContextId, ir.getThis(), null);
+                    int thisVarId = domain.checkAndAdd(thisVar);
+                    constraintSet.addSimpleSConstraint(new SimpleSConstraint(thisVarId, baseVarId));
+
+                    // if the target method is a constructor, then base = this
+                    // because `this` in the context is unique for each `base`
+                    if (targetMethod.isConstructor()) {
+                        constraintSet.addSimpleSConstraint(new SimpleSConstraint(baseVarId, thisVarId));
+                    }
+                }
+                
+                // 2. add constraints for the arguments: paramVar = argVar
                 List<Var> args = invokeExp.getArgs();
                 for (int i = 0; i < args.size(); i++) {
                     var argVar = new AbstractVar(callerContextId, args.get(i), null);
@@ -73,8 +116,7 @@ public class InterproceduralConstraintResult {
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(paramId, argId));
                 }
 
-                // add constraints for the return value: resultVar <- returnVar
-                Var result = invoke.getResult();
+                // 3. add constraints for the return value: resultVar = returnVar
                 if (result != null) {
                     var resultVar = new AbstractVar(callerContextId, result, null);
                     var resultId = domain.getVarIndex(resultVar);

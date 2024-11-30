@@ -3,7 +3,8 @@ package pku.constraint;
 import pascal.taie.language.classes.JField;
 
 public class AllInConstraint {
-    // for x in right, x field in left
+    // for x in right, left contains x.field
+    // left = right.field
     public int left;
     public int right;
     public JField field;
@@ -12,5 +13,9 @@ public class AllInConstraint {
         this.left = left;
         this.right = right;
         this.field = field;
+    }
+
+    public void print() {
+        System.out.println(left + " = " + right + "." + field.getName());
     }
 }
