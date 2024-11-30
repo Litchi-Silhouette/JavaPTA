@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import pascal.taie.World;
 import pascal.taie.config.AnalysisConfig;
 import pku.abs.*;
+import pku.constraint.*;
 
 public class PointerAnalysis extends PointerAnalysisTrivial {
     public static final String ID = "pku-pta";
@@ -69,65 +70,54 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
             interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
         }
 
-        // var interproceduralConstraintResult = new MethodConstraintResult(preprocess, domain);
-        // interproceduralConstraintResult.analysis(main.getIR());
 
-        if (!interproceduralConstraintResult.leftStmts.isEmpty()) {
-            logger.info("Left stmts: {}", interproceduralConstraintResult.leftStmts);
-            var objs = new TreeSet<>(preprocess.mallocDomain.mallocs);
-            preprocess.test_pts.forEach((test_id, pt) -> {
-                result.put(test_id, objs);
-            });
+        interproceduralConstraintResult.constraintSet.print();
 
-            dump(result);
-        } else {
-            interproceduralConstraintResult.constraintSet.print();
-            var set = new StandardConstraintSet();
-            interproceduralConstraintResult.constraintSet.allhas_constraint.forEach(constraint -> {
-                set.addStandardForallInLeftContainsRightConstraint(
-                        new StandardForallInLeftContainsRight(constraint.left, constraint.right,
-                                new ConvertToField(interproceduralConstraintResult.domain, constraint.field)));
-            });
-            interproceduralConstraintResult.constraintSet.allin_constraint.forEach(constraint -> {
-                set.addStandardForallInRightSubsetLeftConstraint(
-                        new StandardForallInRightSubsetLeft(constraint.left, constraint.right,
-                                new ConvertToField(interproceduralConstraintResult.domain, constraint.field)));
-            });
-            HashMap<Integer, StandardSimple> simple = new HashMap<>();
-            interproceduralConstraintResult.constraintSet.sime_constraint.forEach(constraint -> {
-                if (!simple.containsKey(constraint.left)) {
-                    simple.put(constraint.left, new StandardSimple(constraint.left));
-                }
-                simple.get(constraint.left).addElement(constraint.rightElement);
-            });
-            interproceduralConstraintResult.constraintSet.sims_constraint.forEach(constraint -> {
-                if (!simple.containsKey(constraint.left)) {
-                    simple.put(constraint.left, new StandardSimple(constraint.left));
-                }
-                simple.get(constraint.left).addSubset(constraint.right);
-            });
-            simple.forEach((key, value) -> {
-                set.addSimpleConstraint(value);
-            });
-            set.print();
+        var set = new StandardConstraintSet();
+        interproceduralConstraintResult.constraintSet.allhas_constraint.forEach(constraint -> {
+            set.addStandardForallInLeftContainsRightConstraint(
+                    new StandardForallInLeftContainsRight(constraint.left,constraint.right,
+                            new ConvertToField(globalDomain,constraint.field)));
+        });
+        interproceduralConstraintResult.constraintSet.allin_constraint.forEach(constraint -> {
+            set.addStandardForallInRightSubsetLeftConstraint(
+                    new StandardForallInRightSubsetLeft(constraint.left,constraint.right,
+                            new ConvertToField(globalDomain,constraint.field)));
+        });
+        HashMap<Integer, StandardSimple> simple = new HashMap<>();
+        interproceduralConstraintResult.constraintSet.sime_constraint.forEach(constraint -> {
+            if (!simple.containsKey(constraint.left)) {
+                simple.put(constraint.left, new StandardSimple(constraint.left));
+            }
+            simple.get(constraint.left).addElement(constraint.rightElement);
+        });
+        interproceduralConstraintResult.constraintSet.sims_constraint.forEach(constraint -> {
+            if (!simple.containsKey(constraint.left)) {
+                simple.put(constraint.left, new StandardSimple(constraint.left));
+            }
+            simple.get(constraint.left).addSubset(constraint.right);
+        });
+        simple.forEach((key, value) -> {
+            set.addSimpleConstraint(value);
+        });
+        set.print();
+        set.solve();
 
-            set.solve();
-
-            preprocess.test_pts.forEach((test_id, pt) -> {
-                var objs = new TreeSet<Integer>();
-                var pt_obj = new AbstractVar(0, pt, null);
-                Integer id = interproceduralConstraintResult.domain.getVarIndex(pt_obj);
-                System.out.println("testid: " + test_id + " id: " + id);
+        preprocess.test_pts.forEach((test_id, pt) -> {
+            var objs = new TreeSet<Integer>();
+            List<Integer> ids = globalDomain.getIndexsByValue(pt);
+            System.out.println("testid: " + test_id);
+            for (int id : ids) {
+                System.out.println("id: " + id);
                 set.printInfo(id);
                 set.getInfo(id).forEach(index -> {
-                    objs.add(interproceduralConstraintResult.preprocess.mallocDomain.index2malloc.get(index).value);
+                    objs.add(preprocess.mallocDomain.index2malloc.get(index).value);
                 });
-                System.out.println("objs: " + objs);
-                result.put(test_id, objs);
-            });
-
-            dump(result);
-        }
+            }
+            System.out.println("objs: " + objs);
+            result.put(test_id, objs);
+        });
+        dump(result);
 
         return result;
     }
