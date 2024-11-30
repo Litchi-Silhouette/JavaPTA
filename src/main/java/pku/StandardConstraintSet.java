@@ -10,8 +10,7 @@ import pku.constraint.*;
 
 // 注意这里我们允许对“指针”（所有的 left 和 subset）和“可能值”（所有的 Elements）分开编号
 // 但需要保证如果 p 既是指针，又是可能值，则应该在两边使用相同的编号
-// 同时，需要保证在 StandardForallInRight 约束中，Right 的所有可能值都是指针（引用）
-// 类似的，需要保证在 StandardForallInLeft 约束中，Left 的所有可能值都是指针（引用）
+// 另外，假定所有的指针都是可能值
 public class StandardConstraintSet {
     public List<StandardSimple> sim_constraint;
     public List<StandardForallInRightSubsetLeft> has_constraint;
@@ -20,6 +19,7 @@ public class StandardConstraintSet {
     private HashMap<Integer, Integer> var_to_index; // 变量编号到图节点编号的映射
     private HashMap<Integer, Integer> element_to_index; // 元素编号到图节点编号的映射
     private Graph<Integer> graph;
+    private final boolean DEBUG = true;
     private LinkedList<edge> active_edges; // 存储活跃边
 
     public StandardConstraintSet() {
@@ -60,11 +60,17 @@ public class StandardConstraintSet {
         int left = sc.left;
         int left_graph_index = get_node_index_from_var_index(left);
         for (int subset : sc.subsets) {
+            if (DEBUG) {
+                System.out.println("get constraint: " + subset + " subset " + left);
+            }
             int subset_graph_index = get_node_index_from_var_index(subset);
             // 如果 subset 是 left 的子集，就从 subset 指向 left 连边
             graph.addEdge(subset_graph_index, left_graph_index, 0);
         }
         for (int element : sc.elements) {
+            if (DEBUG) {
+                System.out.println("get constraint: " + element + " in " + left);
+            }
             int element_graph_index = get_node_index_from_element_index(element);
             // 如果 element 在 left 中，就从 element 指向 left 连边，同时令其活跃
             graph.addEdge(element_graph_index, left_graph_index, 1);
@@ -76,11 +82,17 @@ public class StandardConstraintSet {
     // 由于迭代时才使用，不更新图
     public void addStandardForallInRightSubsetLeftConstraint(StandardForallInRightSubsetLeft shc) {
         has_constraint.add(shc);
+        if (DEBUG) {
+            System.out.println("get constraint: forall x in " + shc.right + ", f(x) subset " + shc.left);
+        }
     }
 
     // 由于迭代时才使用，不更新图
     public void addStandardForallInLeftContainsRightConstraint(StandardForallInLeftContainsRight sic) {
         in_constraint.add(sic);
+        if (DEBUG) {
+            System.out.println("get constraint: forall x in " + sic.left + ", " + sic.right + " in f(x)" );
+        }
     }
 
     private static class edge {
@@ -122,7 +134,7 @@ public class StandardConstraintSet {
 
             }
             for (StandardForallInLeftContainsRight inConstraint : in_constraint) {
-                // 处理 forall x in left, right subset f(x)
+                // 处理 forall x in left, right in f(x)
                 int left = inConstraint.left;
                 int left_graph_index = get_node_index_from_var_index(left);
                 if (!effected_nodes.contains(left_graph_index)) {
@@ -130,7 +142,7 @@ public class StandardConstraintSet {
                     continue;
                 }
                 int right = inConstraint.right;
-                int right_graph_index = get_node_index_from_var_index(right);
+                int right_graph_index = get_node_index_from_element_index(right);
                 for (int x : graph.getInfo(left_graph_index)) {
                     int x_field = inConstraint.f.convert(x);
                     int x_graph_index = get_node_index_from_var_index(x_field);
@@ -168,7 +180,7 @@ public class StandardConstraintSet {
     }
 
     public void printInfo(Integer var) {
-        HashSet<Integer> info = graph.getInfo(get_node_index_from_var_index(var));
+        HashSet<Integer> info = getInfo(var);
         System.out.println("possible objects of " + var + ": " + info);
     }
 
