@@ -1,6 +1,9 @@
 package pku;
 
 import java.util.TreeSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import pascal.taie.World;
 import pascal.taie.config.AnalysisConfig;
@@ -15,7 +18,7 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
 
     @Override
     public PointerAnalysisResult analyze() {
-        var PTAresult = new PointerAnalysisResult();
+        var result = new PointerAnalysisResult();
         var preprocess = new PreprocessResult();
         var interproceduralConstraintResult = new InterproceduralConstraintResult();
         var globalDomain = new AbstractVarDomain();
@@ -66,11 +69,11 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
             interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
         }
 
-        var methodResult = new MethodConstraintResult(preprocess, domain);
-        methodResult.analysis(main.getIR());
+        // var interproceduralConstraintResult = new MethodConstraintResult(preprocess, domain);
+        // interproceduralConstraintResult.analysis(main.getIR());
 
-        if (!methodResult.leftStmts.isEmpty()) {
-            logger.info("Left stmts: {}", methodResult.leftStmts);
+        if (!interproceduralConstraintResult.leftStmts.isEmpty()) {
+            logger.info("Left stmts: {}", interproceduralConstraintResult.leftStmts);
             var objs = new TreeSet<>(preprocess.mallocDomain.mallocs);
             preprocess.test_pts.forEach((test_id, pt) -> {
                 result.put(test_id, objs);
@@ -78,26 +81,26 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
 
             dump(result);
         } else {
-            methodResult.constraintSet.print();
+            interproceduralConstraintResult.constraintSet.print();
             var set = new StandardConstraintSet();
-            methodResult.constraintSet.allhas_constraint.forEach(constraint -> {
+            interproceduralConstraintResult.constraintSet.allhas_constraint.forEach(constraint -> {
                 set.addStandardForallInLeftContainsRightConstraint(
                         new StandardForallInLeftContainsRight(constraint.left, constraint.right,
-                                new ConvertToField(methodResult.domain, constraint.field)));
+                                new ConvertToField(interproceduralConstraintResult.domain, constraint.field)));
             });
-            methodResult.constraintSet.allin_constraint.forEach(constraint -> {
+            interproceduralConstraintResult.constraintSet.allin_constraint.forEach(constraint -> {
                 set.addStandardForallInRightSubsetLeftConstraint(
                         new StandardForallInRightSubsetLeft(constraint.left, constraint.right,
-                                new ConvertToField(methodResult.domain, constraint.field)));
+                                new ConvertToField(interproceduralConstraintResult.domain, constraint.field)));
             });
             HashMap<Integer, StandardSimple> simple = new HashMap<>();
-            methodResult.constraintSet.sime_constraint.forEach(constraint -> {
+            interproceduralConstraintResult.constraintSet.sime_constraint.forEach(constraint -> {
                 if (!simple.containsKey(constraint.left)) {
                     simple.put(constraint.left, new StandardSimple(constraint.left));
                 }
                 simple.get(constraint.left).addElement(constraint.rightElement);
             });
-            methodResult.constraintSet.sims_constraint.forEach(constraint -> {
+            interproceduralConstraintResult.constraintSet.sims_constraint.forEach(constraint -> {
                 if (!simple.containsKey(constraint.left)) {
                     simple.put(constraint.left, new StandardSimple(constraint.left));
                 }
@@ -113,11 +116,11 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
             preprocess.test_pts.forEach((test_id, pt) -> {
                 var objs = new TreeSet<Integer>();
                 var pt_obj = new AbstractVar(0, pt, null);
-                Integer id = methodResult.domain.getVarIndex(pt_obj);
+                Integer id = interproceduralConstraintResult.domain.getVarIndex(pt_obj);
                 System.out.println("testid: " + test_id + " id: " + id);
                 set.printInfo(id);
                 set.getInfo(id).forEach(index -> {
-                    objs.add(methodResult.preprocess.mallocDomain.index2malloc.get(index).value);
+                    objs.add(interproceduralConstraintResult.preprocess.mallocDomain.index2malloc.get(index).value);
                 });
                 System.out.println("objs: " + objs);
                 result.put(test_id, objs);
@@ -125,7 +128,7 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
 
             dump(result);
         }
-        // return result;
+
         return result;
     }
 }
