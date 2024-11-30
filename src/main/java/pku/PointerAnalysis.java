@@ -28,7 +28,6 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
         var jclass = main.getDeclaringClass();
         List<Context> workList = new ArrayList<>();
         List<Integer> visited = new ArrayList<>();
-        
 
         world.getClassHierarchy().applicationClasses().forEach(tjclass -> {
             tjclass.getDeclaredFields().forEach(field -> {
@@ -51,7 +50,7 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                 interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
             });
         });
-        
+
         // BFS, deal with 1-level context
         while (!workList.isEmpty()) {
             Context context = workList.remove(0);
@@ -70,19 +69,18 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
             interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
         }
 
-
         interproceduralConstraintResult.constraintSet.print();
 
         var set = new StandardConstraintSet();
         interproceduralConstraintResult.constraintSet.allhas_constraint.forEach(constraint -> {
             set.addStandardForallInLeftContainsRightConstraint(
-                    new StandardForallInLeftContainsRight(constraint.left,constraint.right,
-                            new ConvertToField(globalDomain,constraint.field)));
+                    new StandardForallInLeftContainsRight(constraint.left, constraint.right,
+                            new ConvertToField(globalDomain, constraint.field)));
         });
         interproceduralConstraintResult.constraintSet.allin_constraint.forEach(constraint -> {
             set.addStandardForallInRightSubsetLeftConstraint(
-                    new StandardForallInRightSubsetLeft(constraint.left,constraint.right,
-                            new ConvertToField(globalDomain,constraint.field)));
+                    new StandardForallInRightSubsetLeft(constraint.left, constraint.right,
+                            new ConvertToField(globalDomain, constraint.field)));
         });
         HashMap<Integer, StandardSimple> simple = new HashMap<>();
         interproceduralConstraintResult.constraintSet.sime_constraint.forEach(constraint -> {

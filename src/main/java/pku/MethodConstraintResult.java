@@ -50,7 +50,8 @@ public class MethodConstraintResult {
                 var value = ((New) stmt).getLValue();
                 AbstractVar var = new AbstractVar(currentContextId, value, null);
                 var id = domain.checkAndAdd(var);
-                var constraint = new SimpleEConstraint(id, malloc);
+                domain.addMallocMapping(id, malloc);
+                var constraint = new SimpleEConstraint(id, id);
                 constraintSet.addSimpleEConstraint(constraint);
             } else if (stmt instanceof AssignLiteral) {
                 continue;
