@@ -25,7 +25,7 @@ public class MethodConstraintResult {
 
     public MethodConstraintResult(PreprocessResult preprocess, AbstractVarDomain domain) {
         this.constraintSet = new ConstraintSet();
-        // this.domain = domain.clone(); 
+        // this.domain = domain.clone();
         this.domain = domain;
         this.preprocess = preprocess;
         this.invokeStmts = new ArrayList<Invoke>();
@@ -40,6 +40,7 @@ public class MethodConstraintResult {
 
     public void analysis(Context context) {
         IR ir = context.getIR();
+        preprocess.analysis(ir);
         var stmts = ir.getStmts();
         int currentContextId = context.hashCode();
         for (var stmt : stmts) {
@@ -181,7 +182,8 @@ public class MethodConstraintResult {
                 if (exp instanceof InvokeStatic) {
                     var methodRef = ((InvokeStatic) exp).getMethodRef();
                     var className = methodRef.getDeclaringClass().getName();
-                    if (className.equals("benchmark.internal.Benchmark") || className.equals("benchmark.internal.BenchmarkN")) {
+                    if (className.equals("benchmark.internal.Benchmark")
+                            || className.equals("benchmark.internal.BenchmarkN")) {
                         continue; // ignore alloc and test when analyzing
                     }
                 }

@@ -23,6 +23,7 @@ public class AbstractVarDomain {
         name2index = new HashMap<>();
         index2malloc = new HashMap<>();
         newIndexes = new TreeSet<>();
+        var2indexs = new HashMap<>();
     }
 
     public Integer addMallocMapping(Integer varIndex, Integer mallocIndex) {

@@ -35,7 +35,9 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                     globalDomain.addField(new AbstractVar(0, null, field));
                 }
             });
+        });
 
+        world.getClassHierarchy().applicationClasses().forEach(tjclass -> {
             tjclass.getDeclaredMethods().forEach(method -> {
                 if (method.isAbstract())
                     return;
@@ -109,7 +111,8 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                 System.out.println("id: " + id);
                 set.printInfo(id);
                 set.getInfo(id).forEach(index -> {
-                    objs.add(preprocess.mallocDomain.index2malloc.get(index).value);
+                    objs.add(preprocess.mallocDomain.index2malloc.get(
+                            globalDomain.index2malloc.get(index)).value);
                 });
             }
             System.out.println("objs: " + objs);
