@@ -1,6 +1,7 @@
 package pku.abs;
 
 import java.util.HashMap;
+import java.util.TreeSet;
 
 import pascal.taie.language.type.ClassType;
 import pascal.taie.language.classes.JField;
@@ -10,9 +11,23 @@ public class AbstractVarDomain {
     public HashMap<Integer, AbstractVar> index2name;
     public HashMap<AbstractVar, Integer> name2index;
 
+    public HashMap<Integer, Integer> index2malloc;
+    public TreeSet<Integer> newIndexes;
+
     public AbstractVarDomain() {
         index2name = new HashMap<>();
         name2index = new HashMap<>();
+        index2malloc = new HashMap<>();
+        newIndexes = new TreeSet<>();
+    }
+
+    public Integer addMallocMapping(Integer varIndex, Integer mallocIndex) {
+        if (!index2malloc.containsKey(varIndex) && !newIndexes.contains(varIndex)) {
+            index2malloc.put(varIndex, mallocIndex);
+            newIndexes.add(varIndex);
+            return mallocIndex;
+        }
+        return -1;
     }
 
     public Integer addField(AbstractVar name) {

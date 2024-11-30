@@ -15,7 +15,8 @@ public class Field1 {
     Benchmark.alloc(3);
     B b3 = new B();
     a1.f = b1;
-    if(args.length > 1) a2.f = b2;
+    if (args.length > 1)
+      a2.f = b2;
     B b4 = a1.f;
     Benchmark.test(1, b4);
     B b5 = a2.f;
@@ -23,7 +24,7 @@ public class Field1 {
   }
 }
 /*
-Answer:
-  1 : 1 2
-  2 : 1 2
-*/
+ * Answer:
+ * 1 : 1 2
+ * 2 : 1 2
+ */

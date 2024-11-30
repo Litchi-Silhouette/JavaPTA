@@ -96,7 +96,8 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                 System.out.println("testid: " + test_id + " id: " + id);
                 set.printInfo(id);
                 set.getInfo(id).forEach(index -> {
-                    objs.add(methodResult.preprocess.mallocDomain.index2malloc.get(index).value);
+                    objs.add(methodResult.preprocess.mallocDomain.index2malloc.get(
+                            methodResult.domain.index2malloc.get(index)).value);
                 });
                 System.out.println("objs: " + objs);
                 result.put(test_id, objs);
