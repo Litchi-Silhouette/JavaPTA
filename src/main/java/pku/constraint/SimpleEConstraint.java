@@ -8,4 +8,8 @@ public class SimpleEConstraint {
         this.left = left;
         this.rightElement = rightElement;
     }
+
+    public void print() {
+        System.out.println(left + " has " + rightElement);
+    }
 }

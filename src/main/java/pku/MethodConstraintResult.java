@@ -7,6 +7,9 @@ import pascal.taie.language.classes.JField;
 import pascal.taie.language.type.*;
 import pascal.taie.ir.IR;
 import pascal.taie.ir.exp.InstanceFieldAccess;
+import pascal.taie.ir.exp.IntLiteral;
+import pascal.taie.ir.exp.InvokeSpecial;
+import pascal.taie.ir.exp.InvokeStatic;
 import pascal.taie.ir.exp.StaticFieldAccess;
 import pku.abs.*;
 import pku.constraint.*;
@@ -34,15 +37,19 @@ public class MethodConstraintResult {
     public void analysis(IR ir) {
         var stmts = ir.getStmts();
         for (var stmt : stmts) {
+            System.out.println(stmt);
             if (stmt instanceof New) {
+                System.out.println("New");
                 int malloc = preprocess.objs.get(stmt).count;
                 var value = ((New) stmt).getLValue();
                 AbstractVar var = new AbstractVar(0, value, null);
                 var id = domain.checkAndAdd(var);
-                constraintSet.addSimpleEConstraint(new SimpleEConstraint(id, malloc));
+                var constraint = new SimpleEConstraint(id, malloc);
+                constraintSet.addSimpleEConstraint(constraint);
             } else if (stmt instanceof AssignLiteral) {
                 continue;
             } else if (stmt instanceof Copy) {
+                System.out.println("Copy");
                 var src = ((Copy) stmt).getRValue();
                 var dst = ((Copy) stmt).getLValue();
                 if (!checkRef(src.getType(), dst.getType())) {
@@ -56,8 +63,10 @@ public class MethodConstraintResult {
                     System.err.println("srcVar not defined: " + srcVar);
                     srcId = domain.addVar(srcVar);
                 }
-                constraintSet.addSimpleSConstraint(new SimpleSConstraint(dstId, srcId));
+                var constraint = new SimpleSConstraint(dstId, srcId);
+                constraintSet.addSimpleSConstraint(constraint);
             } else if (stmt instanceof LoadField) {
+                System.out.println("LoadField");
                 var dst = ((LoadField) stmt).getLValue();
                 var fieldaccess = ((LoadField) stmt).getFieldAccess();
                 AbstractVar fieldVar;
@@ -86,8 +95,9 @@ public class MethodConstraintResult {
                 if (fieldaccess instanceof StaticFieldAccess)
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(dstId, fieldId));
                 else
-                    constraintSet.addAllHasConstraint(new AllHasConstraint(dstId, fieldId, field));
+                    constraintSet.addAllInConstraint(new AllInConstraint(dstId, fieldId, field));
             } else if (stmt instanceof StoreField) {
+                System.out.println("StoreField");
                 var src = ((StoreField) stmt).getRValue();
                 var fieldaccess = ((StoreField) stmt).getFieldAccess();
                 AbstractVar fieldVar;
@@ -160,9 +170,20 @@ public class MethodConstraintResult {
             } else if (stmt instanceof Cast) {
                 continue;
             } else if (stmt instanceof Invoke) {
+                var exp = ((Invoke) stmt).getInvokeExp();
+                if (exp instanceof InvokeStatic) {
+                    var methodRef = ((InvokeStatic) exp).getMethodRef();
+                    var className = methodRef.getDeclaringClass().getName();
+                    if (className.equals("benchmark.internal.Benchmark")
+                            || className.equals("benchmark.internal.BenchmarkN")) {
+                        continue;
+                    }
+                }
+                if (exp instanceof InvokeSpecial)
+                    continue;
                 leftStmts.add(stmt);
             } else if (stmt instanceof Return) {
-                leftStmts.add(stmt);
+                // leftStmts.add(stmt);
             } else if (stmt instanceof If) {
                 continue;
             } else if (stmt instanceof Goto) {

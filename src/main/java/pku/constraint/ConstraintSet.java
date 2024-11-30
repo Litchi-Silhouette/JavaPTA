@@ -31,4 +31,25 @@ public class ConstraintSet {
     public void addAllHasConstraint(AllHasConstraint ahc) {
         allhas_constraint.add(ahc);
     }
+
+    public void print() {
+        System.out.println("Constraint Set:");
+        System.out.println("Simple E Constraints:");
+        for (var sec : sime_constraint) {
+            sec.print();
+        }
+        System.out.println("Simple S Constraints:");
+        for (var ssc : sims_constraint) {
+            ssc.print();
+        }
+        System.out.println("All In Constraints:");
+        for (var aic : allin_constraint) {
+            aic.print();
+        }
+        System.out.println("All Has Constraints:");
+        for (var ahc : allhas_constraint) {
+            ahc.print();
+        }
+        System.out.println();
+    }
 }

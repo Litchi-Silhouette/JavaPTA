@@ -14,4 +14,8 @@ public class AllInConstraint {
         this.right = right;
         this.field = field;
     }
+
+    public void print() {
+        System.out.println(left + " = " + right + "." + field.getName());
+    }
 }

@@ -14,4 +14,8 @@ public class StandardForallInRightSubsetLeft {
         this.f = f;
     }
 
+    @Override
+    public String toString() {
+        return "forall x in " + right + ", " + f + " subset " + left;
+    }
 }

@@ -14,4 +14,9 @@ public class ConvertToField {
     public Integer convert(int v) {
         return domain.getVarField(v, field);
     }
+
+    @Override
+    public String toString() {
+        return "." + field.getName();
+    }
 }
