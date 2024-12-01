@@ -40,7 +40,6 @@ public class MethodConstraintResult {
 
     public void analysis(Context context) {
         IR ir = context.getIR();
-        preprocess.analysis(ir);
         var stmts = ir.getStmts();
         int currentContextId = context.hashCode();
         for (var stmt : stmts) {
