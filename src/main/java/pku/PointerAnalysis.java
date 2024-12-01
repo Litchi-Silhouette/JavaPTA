@@ -62,20 +62,26 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                         return;
                     // if (method.isConstructor())
 
-                    Context context = new Context(null, method.getIR(), -1);
-                    int currentContextId = context.hashCode();
+                    // Context context = new Context(null, method.getIR(), -1);
+                    // int currentContextId = context.hashCode();
 
                     // globalDomain continually updated
-                    var mcr = new MethodConstraintResult(preprocess, globalDomain);
+                    // var mcr = new MethodConstraintResult(preprocess, globalDomain);
                     // System.out.println("[Entering Context] " + context.getName() + " " +
                     // currentContextId);
-                    mcr.analysis(context);
+                    // mcr.analysis(context);
                     // System.out.println("[Leaving Context] " + context.getName() + " " +
                     // currentContextId);
 
-                    interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
+                    // interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
                 });
             });
+
+            Context mainContext = new Context(null, main.getIR(), -1);
+            int mainContextId = mainContext.hashCode();
+            var main_mcr = new MethodConstraintResult(preprocess, globalDomain);
+            main_mcr.analysis(mainContext);
+            interproceduralConstraintResult.updateInterprocedualConstraint(main_mcr, mainContextId,workList);
 
             // BFS, deal with 1-level context
             while (!workList.isEmpty()) {
