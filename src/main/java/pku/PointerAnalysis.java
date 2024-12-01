@@ -67,9 +67,11 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
 
                     // globalDomain continually updated
                     var mcr = new MethodConstraintResult(preprocess, globalDomain);
-                    System.out.println("[Entering Context] " + context.getName() + " " + currentContextId);
+                    // System.out.println("[Entering Context] " + context.getName() + " " +
+                    // currentContextId);
                     mcr.analysis(context);
-                    System.out.println("[Leaving Context] " + context.getName() + " " + currentContextId);
+                    // System.out.println("[Leaving Context] " + context.getName() + " " +
+                    // currentContextId);
 
                     interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
                 });
@@ -87,13 +89,15 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
 
                 // domain and preprocess continually updated
                 var mcr = new MethodConstraintResult(preprocess, globalDomain);
-                System.out.println("[Entering Context] " + context.getName() + " " + currentContextId);
+                // System.out.println("[Entering Context] " + context.getName() + " " +
+                // currentContextId);
                 mcr.analysis(context);
-                System.out.println("[Leaving Context] " + context.getName() + " " + currentContextId);
+                // System.out.println("[Leaving Context] " + context.getName() + " " +
+                // currentContextId);
                 interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
             }
 
-            interproceduralConstraintResult.constraintSet.print();
+            // interproceduralConstraintResult.constraintSet.print();
 
             var set = new StandardConstraintSet();
             interproceduralConstraintResult.constraintSet.allhas_constraint.forEach(constraint -> {
@@ -122,17 +126,17 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
             simple.forEach((key, value) -> {
                 set.addSimpleConstraint(value);
             });
-            set.print();
-            globalDomain.print();
+            // set.print();
+            // globalDomain.print();
             set.solve();
 
             preprocess.test_pts.forEach((test_id, pt) -> {
                 var objs = new TreeSet<Integer>();
                 List<Integer> ids = globalDomain.getIndexsByValue(pt);
-                System.out.println("testid: " + test_id);
+                // System.out.println("testid: " + test_id);
                 for (int id : ids) {
-                    System.out.println("id: " + id);
-                    set.printInfo(id);
+                    // System.out.println("id: " + id);
+                    // set.printInfo(id);
                     set.getInfo(id).forEach(index -> {
                         int mallocID = preprocess.mallocDomain.index2malloc.get(
                                 globalDomain.index2malloc.get(index)).value;
@@ -141,7 +145,7 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                         }
                     });
                 }
-                System.out.println("objs: " + objs);
+                // System.out.println("objs: " + objs);
                 result.put(test_id, objs);
             });
             dump(result);

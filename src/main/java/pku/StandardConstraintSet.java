@@ -19,7 +19,7 @@ public class StandardConstraintSet {
     private HashMap<Integer, Integer> var_to_index; // 变量编号到图节点编号的映射
     private HashMap<Integer, Integer> element_to_index; // 元素编号到图节点编号的映射
     private Graph<Integer> graph;
-    private final boolean DEBUG = true;
+    private final boolean DEBUG = false;
     private LinkedList<edge> active_edges; // 存储活跃边
 
     public StandardConstraintSet() {
@@ -91,7 +91,7 @@ public class StandardConstraintSet {
     public void addStandardForallInLeftContainsRightConstraint(StandardForallInLeftContainsRight sic) {
         in_constraint.add(sic);
         if (DEBUG) {
-            System.out.println("get constraint: forall x in " + sic.left + ", " + sic.right + " subset f(x)" );
+            System.out.println("get constraint: forall x in " + sic.left + ", " + sic.right + " subset f(x)");
         }
     }
 
@@ -121,7 +121,7 @@ public class StandardConstraintSet {
                 graph.addEdge(from, to, 0);
                 if (graph.addInfos(to, graph.getInfo(from))) {
                     is_stable = false;
-//                    effected_nodes.add(to);
+                    // effected_nodes.add(to);
                     effected_nodes.add(graph.getRoot(to));
                     HashMap<Integer, Integer> edges = graph.getEdges(to);
                     for (int next : edges.keySet()) {
@@ -138,7 +138,7 @@ public class StandardConstraintSet {
                 // 处理 forall x in left, right subset f(x)
                 int left = inConstraint.left;
                 int left_graph_index = get_node_index_from_var_index(left);
-//                if (!effected_nodes.contains(left_graph_index)) {
+                // if (!effected_nodes.contains(left_graph_index)) {
                 if (!effected_nodes.contains(graph.getRoot(left_graph_index))) {
                     // 如果本轮中 left 没有更新，就添加新边
                     continue;
@@ -160,7 +160,7 @@ public class StandardConstraintSet {
                 int left_graph_index = get_node_index_from_var_index(left);
                 int right = hasConstraint.right;
                 int right_graph_index = get_node_index_from_var_index(right);
-//                if (!effected_nodes.contains(right_graph_index)) {
+                // if (!effected_nodes.contains(right_graph_index)) {
                 if (!effected_nodes.contains(graph.getRoot(right_graph_index))) {
                     // 如果本轮中 left 没有更新，就不用添加新边
                     continue;

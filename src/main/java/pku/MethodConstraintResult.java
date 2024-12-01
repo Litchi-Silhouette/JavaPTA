@@ -46,9 +46,9 @@ public class MethodConstraintResult {
         }
 
         for (var stmt : stmts) {
-            System.out.println(stmt);
+            // System.out.println(stmt);
             if (stmt instanceof New) {
-                System.out.println("New");
+                // System.out.println("New");
                 var mallocObj = preprocess.objs.get(stmt);
                 int malloc = mallocObj.count;
                 var value = ((New) stmt).getLValue();
@@ -60,7 +60,7 @@ public class MethodConstraintResult {
             } else if (stmt instanceof AssignLiteral) {
                 continue;
             } else if (stmt instanceof Copy) {
-                System.out.println("Copy");
+                // System.out.println("Copy");
                 var src = ((Copy) stmt).getRValue();
                 var dst = ((Copy) stmt).getLValue();
                 if (!checkRef(src.getType(), dst.getType())) {
@@ -77,7 +77,7 @@ public class MethodConstraintResult {
                 var constraint = new SimpleSConstraint(dstId, srcId);
                 constraintSet.addSimpleSConstraint(constraint);
             } else if (stmt instanceof LoadField) {
-                System.out.println("LoadField");
+                // System.out.println("LoadField");
                 var dst = ((LoadField) stmt).getLValue();
                 var fieldaccess = ((LoadField) stmt).getFieldAccess();
                 AbstractVar fieldVar;
@@ -112,7 +112,7 @@ public class MethodConstraintResult {
                 else
                     constraintSet.addAllInConstraint(new AllInConstraint(dstId, fieldId, field));
             } else if (stmt instanceof StoreField) {
-                System.out.println("StoreField");
+                // System.out.println("StoreField");
                 var src = ((StoreField) stmt).getRValue();
                 var fieldaccess = ((StoreField) stmt).getFieldAccess();
                 AbstractVar fieldVar;

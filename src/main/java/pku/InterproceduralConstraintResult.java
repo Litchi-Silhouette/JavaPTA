@@ -54,14 +54,14 @@ public class InterproceduralConstraintResult {
         for (Invoke invoke : mcr.invokeStmts) {
             // boolean isSuper = Context.isSuper(invoke);
             // if (isSuper) {
-            //     System.out.println("[Inter][invoke] Super call");
+            // System.out.println("[Inter][invoke] Super call");
             // }
             InvokeExp invokeExp = invoke.getInvokeExp();
             boolean isInstance = invokeExp instanceof InvokeInstanceExp ? true : false;
             int baseVarId = -1;
             String baseVarName = "";
-            System.out.println("----------------------------------");
-            System.out.println("[Inter][invoke] "+invokeExp);
+            // System.out.println("----------------------------------");
+            // System.out.println("[Inter][invoke] "+invokeExp);
 
             // add constraints for the `base.f()` expression
             // let this = base
@@ -74,9 +74,9 @@ public class InterproceduralConstraintResult {
                     baseVarId = domain.addVar(baseVar, null);
                 }
                 baseVarName = base.getName();
-                System.out.println("[Inter] baseVar "+base.getName()+"_"+baseVarId);
+                // System.out.println("[Inter] baseVar "+base.getName()+"_"+baseVarId);
             } else {
-                System.out.println("[Inter] Not an instance invoke");
+                // System.out.println("[Inter] Not an instance invoke");
             }
 
             Var result = invoke.getResult();
@@ -87,9 +87,9 @@ public class InterproceduralConstraintResult {
                     System.err.println("resultVar not defined: " + resultVar);
                     resultId = domain.addVar(resultVar, null);
                 }
-                System.out.println("[Inter] resultVar "+result.getName()+"_"+resultId);
-            }else{
-                System.out.println("[Inter] No result");
+                // System.out.println("[Inter] resultVar "+result.getName()+"_"+resultId);
+            } else {
+                // System.out.println("[Inter] No result");
             }
 
             // resolve the target methods
@@ -104,8 +104,9 @@ public class InterproceduralConstraintResult {
                         continue;
                     }
                 }
-                
-                System.out.println("[Inter] targetMethod "+targetMethod.getName()+" "+targetMethod.getSignature());
+
+                // System.out.println("[Inter] targetMethod "+targetMethod.getName()+"
+                // "+targetMethod.getSignature());
                 IR ir = targetMethod.getIR();
                 if (ir == null) {
                     System.err.println("IR not found for method: " + targetMethod.getName());
@@ -129,7 +130,8 @@ public class InterproceduralConstraintResult {
                     if (targetMethod.isConstructor()) {
                         constraintSet.addSimpleSConstraint(new SimpleSConstraint(baseVarId, thisVarId));
                     }
-                    System.out.println("[Inter] 1. thisVar " + ir.getThis().getName() + "_" + thisVarId + " = baseVar " + baseVarName + "_" + baseVarId);
+                    // System.out.println("[Inter] 1. thisVar " + ir.getThis().getName() + "_" +
+                    // thisVarId + " = baseVar " + baseVarName + "_" + baseVarId);
                 }
 
                 // 2. add constraints for the arguments: paramVar = argVar
@@ -144,7 +146,8 @@ public class InterproceduralConstraintResult {
                         argId = domain.addVar(argVar, null);
                     }
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(paramId, argId));
-                    System.out.println("[Inter] 2. paramVar " + ir.getParam(i).getName() + "_" + paramId + " = argVar " + args.get(i).getName() + "_" + argId);
+                    // System.out.println("[Inter] 2. paramVar " + ir.getParam(i).getName() + "_" +
+                    // paramId + " = argVar " + args.get(i).getName() + "_" + argId);
                 }
 
                 // 3. add constraints for the return value: resultVar = returnVar
@@ -160,7 +163,8 @@ public class InterproceduralConstraintResult {
                         var returnVar = new AbstractVar(calleeContextId, ret, null);
                         var returnId = domain.checkAndAdd(returnVar);
                         constraintSet.addSimpleSConstraint(new SimpleSConstraint(resultId, returnId));
-                        System.out.println("[Inter] 3. resultVar " + result.getName() + "_" + resultId + " = returnVar " + ret.getName() + "_" + returnId);
+                        // System.out.println("[Inter] 3. resultVar " + result.getName() + "_" +
+                        // resultId + " = returnVar " + ret.getName() + "_" + returnId);
                     }
                 }
             }
