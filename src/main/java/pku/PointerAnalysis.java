@@ -62,7 +62,7 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                         return;
                     // if (method.isConstructor())
 
-                    Context context = new Context(null, method.getIR());
+                    Context context = new Context(null, method.getIR(), -1);
                     int currentContextId = context.hashCode();
 
                     // globalDomain continually updated

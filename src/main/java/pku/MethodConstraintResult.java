@@ -4,15 +4,11 @@ import java.util.List;
 import java.util.ArrayList;
 import pascal.taie.ir.stmt.*;
 import pascal.taie.language.classes.JField;
-import pascal.taie.language.classes.JMethod;
 import pascal.taie.language.type.*;
 import pascal.taie.ir.IR;
 import pascal.taie.ir.exp.InstanceFieldAccess;
-import pascal.taie.ir.exp.IntLiteral;
-import pascal.taie.ir.exp.InvokeSpecial;
 import pascal.taie.ir.exp.InvokeStatic;
-import pascal.taie.ir.exp.IntLiteral;
-import pascal.taie.ir.exp.InvokeStatic;
+import pascal.taie.ir.exp.*;
 import pascal.taie.ir.exp.StaticFieldAccess;
 import pku.abs.*;
 import pku.constraint.*;
@@ -42,6 +38,13 @@ public class MethodConstraintResult {
         IR ir = context.getIR();
         var stmts = ir.getStmts();
         int currentContextId = context.hashCode();
+
+        Var thisVar = ir.getThis();
+        if (thisVar != null) {
+            AbstractVar var = new AbstractVar(currentContextId, thisVar, null);
+            domain.addVar(var);
+        }
+
         for (var stmt : stmts) {
             System.out.println(stmt);
             if (stmt instanceof New) {
