@@ -111,7 +111,7 @@ public class StandardConstraintSet {
         while (!is_stable && !active_edges.isEmpty()) {
             is_stable = true;
             // 注意这里尽管可能造成并查集更新，但我们存储的索引依然有效，因为查询接口都是会先寻找根节点的
-//            graph.mergeStrongConnectedComponentAll();
+            graph.mergeStrongConnectedComponentAll();
             HashSet<Integer> effected_nodes = new HashSet<>(); // 在该轮更新中集合有更新的节点，注意存储的是 graph index
             // 先传导所有影响
             while (!active_edges.isEmpty()) {

@@ -195,7 +195,7 @@ public class Graph <V> {
         path = new_path; // 路径中上一次该节点出现知乎的节点已经全部合并，只留前面的节点（和当前节点）
         visited.add(current);
         path.add(current);
-        HashMap<V, Integer> edges = getEdges(current);
+        HashMap<V, Integer> edges = new HashMap<>(getEdges(current));   // 因为在 merge 中会修改邻接表，因此这里需要复制一份
         for (V next : edges.keySet()) {
             mergeStrongConnectedComponent(next, path, visited); // 最终所有的环应当被合并，因此递归是终止的
         }
