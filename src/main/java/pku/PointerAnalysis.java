@@ -123,6 +123,7 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                 set.addSimpleConstraint(value);
             });
             set.print();
+            globalDomain.print();
             set.solve();
 
             preprocess.test_pts.forEach((test_id, pt) -> {

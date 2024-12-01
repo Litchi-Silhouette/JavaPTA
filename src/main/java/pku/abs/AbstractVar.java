@@ -26,6 +26,17 @@ public class AbstractVar {
     }
 
     @Override
+    public String toString() {
+        String name = contextID + clazz.getName() + ": ";
+        if (this.value != null) {
+            name += this.value.getName() + (this.field != null ? "." + this.field.getName() : "");
+        } else if (this.field != null) {
+            name += this.field.getName();
+        }
+        return name;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof AbstractVar) {
             AbstractVar other = (AbstractVar) obj;

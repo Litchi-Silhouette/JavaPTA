@@ -46,10 +46,11 @@ public class MethodConstraintResult {
             System.out.println(stmt);
             if (stmt instanceof New) {
                 System.out.println("New");
-                int malloc = preprocess.objs.get(stmt).count;
+                var mallocObj = preprocess.objs.get(stmt);
+                int malloc = mallocObj.count;
                 var value = ((New) stmt).getLValue();
                 AbstractVar var = new AbstractVar(currentContextId, value, null);
-                var id = domain.checkAndAdd(var);
+                var id = domain.addVar(var, mallocObj.type);
                 domain.addMallocMapping(id, malloc);
                 var constraint = new SimpleEConstraint(id, id);
                 constraintSet.addSimpleEConstraint(constraint);
@@ -68,7 +69,7 @@ public class MethodConstraintResult {
                 var srcId = domain.getVarIndex(srcVar);
                 if (srcId == -1) {
                     System.err.println("srcVar not defined: " + srcVar);
-                    srcId = domain.addVar(srcVar);
+                    srcId = domain.addVar(srcVar, null);
                 }
                 var constraint = new SimpleSConstraint(dstId, srcId);
                 constraintSet.addSimpleSConstraint(constraint);
@@ -155,7 +156,7 @@ public class MethodConstraintResult {
                 int dstId = domain.checkAndAdd(dstvar);
                 int baseId = domain.getVarIndex(basevar);
                 if (baseId == -1) {
-                    baseId = domain.addVar(basevar);
+                    baseId = domain.addVar(basevar, null);
                     System.err.println("base not defined: " + base);
                 }
                 constraintSet.addSimpleSConstraint(new SimpleSConstraint(dstId, baseId));
@@ -172,7 +173,7 @@ public class MethodConstraintResult {
                 int baseId = domain.checkAndAdd(basevar);
                 int srcId = domain.getVarIndex(srcvar);
                 if (srcId == -1) {
-                    srcId = domain.addVar(srcvar);
+                    srcId = domain.addVar(srcvar, null);
                     System.err.println("src not defined: " + src);
                 }
                 constraintSet.addSimpleSConstraint(new SimpleSConstraint(baseId, srcId));
