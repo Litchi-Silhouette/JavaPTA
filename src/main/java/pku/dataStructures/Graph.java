@@ -37,6 +37,9 @@ public class Graph <V> {
     public boolean isSameVertex(V vertex1, V vertex2) {
         return union_find.find(vertex1) == union_find.find(vertex2);
     }
+    public V getRoot(V vertex) {
+        return union_find.find(vertex);
+    }
     // 这里我们假设用 0 表示边活跃，用非零表示边不活跃。
     // 如果是自环，则返回 false 并且不添加边
     public boolean addEdge(V from, V to, Integer label) {
