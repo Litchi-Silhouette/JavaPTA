@@ -50,6 +50,9 @@ public class InterproceduralConstraintResult {
             InvokeExp invokeExp = invoke.getInvokeExp();
             boolean isInstance = invokeExp instanceof InvokeInstanceExp ? true : false;
             int baseVarId = -1;
+            String baseVarName = "";
+            System.out.println("----------------------------------");
+            System.out.println("[Inter][invoke] "+invokeExp);
 
             // add constraints for the `base.f()` expression
             // let this = base
@@ -61,6 +64,10 @@ public class InterproceduralConstraintResult {
                     System.err.println("baseVar not defined: " + baseVar);
                     baseVarId = domain.addVar(baseVar);
                 }
+                baseVarName = base.getName();
+                System.out.println("[Inter] baseVar "+base.getName()+"_"+baseVarId);
+            } else {
+                System.out.println("[Inter] Not an instance invoke");
             }
 
             Var result = invoke.getResult();
@@ -71,18 +78,31 @@ public class InterproceduralConstraintResult {
                     System.err.println("resultVar not defined: " + resultVar);
                     resultId = domain.addVar(resultVar);
                 }
+                System.out.println("[Inter] resultVar "+result.getName()+"_"+resultId);
+            }else{
+                System.out.println("[Inter] No result");
             }
             
             // resolve the target methods
             Set<JMethod> targetMethods = resolveTargetMethods(invokeExp);
             for (JMethod targetMethod : targetMethods) {
                 // for each target method, create a new context and add it to the worklist
+
+                if (targetMethod.getDeclaringClass().getName().equals("java.lang.Object")
+                        || targetMethod.getDeclaringClass().getName().equals("java.lang.ObjectN")) {
+                    if (targetMethod.isConstructor()) {
+                        // skip the Object.init() method
+                        continue;
+                    }
+                }
+                
+                System.out.println("[Inter] targetMethod "+targetMethod.getName()+" "+targetMethod.getSignature());
                 IR ir = targetMethod.getIR();
                 if (ir == null) {
                     System.err.println("IR not found for method: " + targetMethod.getName());
                     continue;
                 }
-                
+
                 Context invokeContext = new Context(invoke, ir);
                 int calleeContextId = invokeContext.hashCode();
                 workList.add(invokeContext);
@@ -100,6 +120,7 @@ public class InterproceduralConstraintResult {
                     if (targetMethod.isConstructor()) {
                         constraintSet.addSimpleSConstraint(new SimpleSConstraint(baseVarId, thisVarId));
                     }
+                    System.out.println("[Inter] 1. thisVar " + ir.getThis().getName() + "_" + thisVarId + " = baseVar " + baseVarName + "_" + baseVarId);
                 }
                 
                 // 2. add constraints for the arguments: paramVar = argVar
@@ -114,6 +135,7 @@ public class InterproceduralConstraintResult {
                         argId = domain.addVar(argVar);
                     }
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(paramId, argId));
+                    System.out.println("[Inter] 2. paramVar " + ir.getParam(i).getName() + "_" + paramId + " = argVar " + args.get(i).getName() + "_" + argId);
                 }
 
                 // 3. add constraints for the return value: resultVar = returnVar
@@ -129,6 +151,7 @@ public class InterproceduralConstraintResult {
                         var returnVar = new AbstractVar(calleeContextId, ret, null);
                         var returnId = domain.checkAndAdd(returnVar);
                         constraintSet.addSimpleSConstraint(new SimpleSConstraint(resultId, returnId));
+                        System.out.println("[Inter] 3. resultVar " + result.getName() + "_" + resultId + " = returnVar " + ret.getName() + "_" + returnId);
                     }
                 }
             }
