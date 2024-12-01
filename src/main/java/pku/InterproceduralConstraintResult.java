@@ -94,6 +94,10 @@ public class InterproceduralConstraintResult {
 
             // resolve the target methods
             Set<JMethod> targetMethods = resolveTargetMethods(invokeExp);
+            if (targetMethods.isEmpty()) {
+                System.err.println("[Inter][!] No target method found for invoke: " + invokeExp);
+                continue;
+            }
             for (JMethod targetMethod : targetMethods) {
                 // for each target method, create a new context and add it to the worklist
 
@@ -129,7 +133,8 @@ public class InterproceduralConstraintResult {
                     if (targetMethod.isConstructor()) {
                         constraintSet.addSimpleSConstraint(new SimpleSConstraint(baseVarId, thisVarId));
                     }
-                    System.out.println("[Inter] 1. thisVar " + ir.getThis().getName() + "_" + thisVarId + " = baseVar " + baseVarName + "_" + baseVarId);
+                    System.out.println("[Inter] 1. thisVar " + ir.getThis().getName() + "_" + thisVarId + " = baseVar "
+                            + baseVarName + "_" + baseVarId);
                 }
 
                 // 2. add constraints for the arguments: paramVar = argVar

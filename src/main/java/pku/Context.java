@@ -34,7 +34,7 @@ public class Context {
         
         // for super init, generate a unique context
         if (stmt!=null && isSuper((Invoke)stmt)) {
-            this.name = className + "." + methodName + "[" + index + '@' + lineNumber + ']' + callerContextId;
+            this.name = className + "." + methodName + "[" + index + '@' + lineNumber + ']' + "called in <" + callerContextId + ">";
         } else {
             this.name = className + "." + methodName + "[" + index + '@' + lineNumber + ']';
         }
