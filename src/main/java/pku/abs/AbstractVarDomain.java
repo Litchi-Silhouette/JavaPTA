@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
-import pascal.taie.language.type.ClassType;
 import pascal.taie.language.classes.JField;
-import pascal.taie.language.type.ArrayType;
+import pascal.taie.language.type.*;
 import pascal.taie.ir.exp.Var;
 
 public class AbstractVarDomain {
@@ -42,10 +41,13 @@ public class AbstractVarDomain {
         return -1;
     }
 
-    public Integer addVar(AbstractVar name) {
+    public Integer addVar(AbstractVar name, Type ttype) {
         if (!name2index.containsKey(name) && name.field == null) {
             var value = name.value;
             var type = value.getType();
+            if (ttype != null) {
+                type = ttype;
+            }
             if (type instanceof ArrayType) {
                 type = ((ArrayType) type).elementType();
             }
@@ -103,7 +105,7 @@ public class AbstractVarDomain {
     public Integer checkAndAdd(AbstractVar name) {
         var id = getVarIndex(name);
         if (id == -1) {
-            return addVar(name);
+            return addVar(name, null);
         }
         return id;
     }
