@@ -91,7 +91,7 @@ public class StandardConstraintSet {
     public void addStandardForallInLeftContainsRightConstraint(StandardForallInLeftContainsRight sic) {
         in_constraint.add(sic);
         if (DEBUG) {
-            System.out.println("get constraint: forall x in " + sic.left + ", " + sic.right + " in f(x)" );
+            System.out.println("get constraint: forall x in " + sic.left + ", " + sic.right + " subset f(x)" );
         }
     }
 
@@ -134,7 +134,7 @@ public class StandardConstraintSet {
 
             }
             for (StandardForallInLeftContainsRight inConstraint : in_constraint) {
-                // 处理 forall x in left, right in f(x)
+                // 处理 forall x in left, right subset f(x)
                 int left = inConstraint.left;
                 int left_graph_index = get_node_index_from_var_index(left);
                 if (!effected_nodes.contains(left_graph_index)) {
@@ -142,7 +142,7 @@ public class StandardConstraintSet {
                     continue;
                 }
                 int right = inConstraint.right;
-                int right_graph_index = get_node_index_from_element_index(right);
+                int right_graph_index = get_node_index_from_var_index(right);
                 for (int x : graph.getInfo(left_graph_index)) {
                     int x_field = inConstraint.f.convert(x);
                     int x_graph_index = get_node_index_from_var_index(x_field);
