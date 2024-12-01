@@ -19,9 +19,10 @@ public class AccessPath1 {
   public static void main(String[] args) {
 
     Benchmark.alloc(1);
+    B s = new B();
     A a = new A();
     A b = new A();
-
+    b.f = s;
     a.f = b.f;
     B d = a.f;
     Benchmark.test(1, d);

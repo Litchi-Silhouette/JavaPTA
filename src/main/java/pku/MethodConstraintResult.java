@@ -101,7 +101,7 @@ public class MethodConstraintResult {
                     if (fieldVar.field != null)
                         fieldId = domain.addField(fieldVar);
                     else
-                        fieldId = domain.addVar(fieldVar);
+                        fieldId = domain.addVar(fieldVar, null);
                     System.err.println("field created: " + fieldId);
                 }
                 if (fieldaccess instanceof StaticFieldAccess)
@@ -136,7 +136,7 @@ public class MethodConstraintResult {
                     if (fieldVar.field != null)
                         fieldId = domain.addField(fieldVar);
                     else
-                        fieldId = domain.addVar(fieldVar);
+                        fieldId = domain.addVar(fieldVar, null);
                     System.err.println("field created: " + fieldId);
                 }
                 if (fieldaccess instanceof StaticFieldAccess)
