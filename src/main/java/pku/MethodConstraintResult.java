@@ -42,7 +42,7 @@ public class MethodConstraintResult {
         Var thisVar = ir.getThis();
         if (thisVar != null) {
             AbstractVar var = new AbstractVar(currentContextId, thisVar, null);
-            domain.addVar(var);
+            domain.checkAndAdd(var);
         }
 
         for (var stmt : stmts) {
