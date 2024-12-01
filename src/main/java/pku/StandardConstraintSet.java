@@ -121,7 +121,8 @@ public class StandardConstraintSet {
                 graph.addEdge(from, to, 0);
                 if (graph.addInfos(to, graph.getInfo(from))) {
                     is_stable = false;
-                    effected_nodes.add(to);
+//                    effected_nodes.add(to);
+                    effected_nodes.add(graph.getRoot(to));
                     HashMap<Integer, Integer> edges = graph.getEdges(to);
                     for (int next : edges.keySet()) {
                         if (edges.get(next) == 0) {
@@ -137,7 +138,8 @@ public class StandardConstraintSet {
                 // 处理 forall x in left, right subset f(x)
                 int left = inConstraint.left;
                 int left_graph_index = get_node_index_from_var_index(left);
-                if (!effected_nodes.contains(left_graph_index)) {
+//                if (!effected_nodes.contains(left_graph_index)) {
+                if (!effected_nodes.contains(graph.getRoot(left_graph_index))) {
                     // 如果本轮中 left 没有更新，就添加新边
                     continue;
                 }
@@ -158,7 +160,8 @@ public class StandardConstraintSet {
                 int left_graph_index = get_node_index_from_var_index(left);
                 int right = hasConstraint.right;
                 int right_graph_index = get_node_index_from_var_index(right);
-                if (!effected_nodes.contains(right_graph_index)) {
+//                if (!effected_nodes.contains(right_graph_index)) {
+                if (!effected_nodes.contains(graph.getRoot(right_graph_index))) {
                     // 如果本轮中 left 没有更新，就不用添加新边
                     continue;
                 }
