@@ -96,8 +96,12 @@ public class MethodConstraintResult {
                 int dstId = domain.checkAndAdd(dstvar);
                 int fieldId = domain.getVarIndex(fieldVar);
                 if (fieldId == -1) {
-                    fieldId = domain.addField(fieldVar);
-                    System.err.println("field not defined: " + field);
+                    System.err.println("field not defined: " + fieldVar.value.getName() + "." + field);
+                    if (fieldVar.field != null)
+                        fieldId = domain.addField(fieldVar);
+                    else
+                        fieldId = domain.addVar(fieldVar);
+                    System.err.println("field created: " + fieldId);
                 }
                 if (fieldaccess instanceof StaticFieldAccess)
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(dstId, fieldId));
@@ -127,8 +131,12 @@ public class MethodConstraintResult {
                 int srcId = domain.checkAndAdd(srcvar);
                 int fieldId = domain.getVarIndex(fieldVar);
                 if (fieldId == -1) {
-                    fieldId = domain.addField(fieldVar);
-                    System.err.println("field not defined: " + field);
+                    System.err.println("field not defined: " + fieldVar.value.getName() + "." + field);
+                    if (fieldVar.field != null)
+                        fieldId = domain.addField(fieldVar);
+                    else
+                        fieldId = domain.addVar(fieldVar);
+                    System.err.println("field created: " + fieldId);
                 }
                 if (fieldaccess instanceof StaticFieldAccess)
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(fieldId, srcId));

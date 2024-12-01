@@ -36,7 +36,7 @@ public class AbstractVarDomain {
     }
 
     public Integer addField(AbstractVar name) {
-        if (!name2index.containsKey(name) && name.field != null) {
+        if (name.field != null) {
             return addElement(name);
         }
         return -1;
@@ -54,7 +54,7 @@ public class AbstractVarDomain {
                 for (var field : fields) {
                     if (field.isStatic())
                         continue;
-                    AbstractVar fieldVar = new AbstractVar(0, value, field);
+                    AbstractVar fieldVar = new AbstractVar(name.contextID, value, field);
                     addElement(fieldVar);
                 }
             }
@@ -118,7 +118,7 @@ public class AbstractVarDomain {
             type = ((ArrayType) type).elementType();
         }
         if (type instanceof ClassType) {
-            AbstractVar fieldVar = new AbstractVar(0, value, field);
+            AbstractVar fieldVar = new AbstractVar(name.contextID, value, field);
             return getVarIndex(fieldVar);
         } else
             return -1;
