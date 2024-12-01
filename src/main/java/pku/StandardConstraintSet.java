@@ -81,18 +81,20 @@ public class StandardConstraintSet {
 
     // 由于迭代时才使用，不更新图
     public void addStandardForallInRightSubsetLeftConstraint(StandardForallInRightSubsetLeft shc) {
-        has_constraint.add(shc);
         if (DEBUG) {
             System.out.println("get constraint: forall x in " + shc.right + ", f(x) subset " + shc.left);
         }
+        has_constraint.add(shc);
+
     }
 
     // 由于迭代时才使用，不更新图
     public void addStandardForallInLeftContainsRightConstraint(StandardForallInLeftContainsRight sic) {
-        in_constraint.add(sic);
         if (DEBUG) {
             System.out.println("get constraint: forall x in " + sic.left + ", " + sic.right + " in f(x)" );
         }
+        in_constraint.add(sic);
+
     }
 
     private static class edge {
@@ -112,7 +114,8 @@ public class StandardConstraintSet {
             is_stable = true;
             // 注意这里尽管可能造成并查集更新，但我们存储的索引依然有效，因为查询接口都是会先寻找根节点的
             graph.mergeStrongConnectedComponentAll();
-            HashSet<Integer> effected_nodes = new HashSet<>(); // 在该轮更新中集合有更新的节点，注意存储的是 graph index
+            HashSet<Integer> effected_nodes = new HashSet<>(); // 在该轮更新中集合有更新的节点，注意存储的是 graph index 的 root_index
+            // 只要不调用 merge，并查集的 root 索引就不会失效
             // 先传导所有影响
             while (!active_edges.isEmpty()) {
                 edge e = active_edges.remove(0);
@@ -121,7 +124,7 @@ public class StandardConstraintSet {
                 graph.addEdge(from, to, 0);
                 if (graph.addInfos(to, graph.getInfo(from))) {
                     is_stable = false;
-                    effected_nodes.add(to);
+                    effected_nodes.add(graph.getRoot(to));
                     HashMap<Integer, Integer> edges = graph.getEdges(to);
                     for (int next : edges.keySet()) {
                         if (edges.get(next) == 0) {
@@ -137,8 +140,9 @@ public class StandardConstraintSet {
                 // 处理 forall x in left, right in f(x)
                 int left = inConstraint.left;
                 int left_graph_index = get_node_index_from_var_index(left);
-                if (!effected_nodes.contains(left_graph_index)) {
-                    // 如果本轮中 left 没有更新，就添加新边
+                if (!effected_nodes.contains(graph.getRoot(left_graph_index))) {
+                    // 如果本轮中 left 没有更新，就不添加新边
+                    // 注意节点更新当且仅当其根节点更新
                     continue;
                 }
                 int right = inConstraint.right;
@@ -158,8 +162,9 @@ public class StandardConstraintSet {
                 int left_graph_index = get_node_index_from_var_index(left);
                 int right = hasConstraint.right;
                 int right_graph_index = get_node_index_from_var_index(right);
-                if (!effected_nodes.contains(right_graph_index)) {
+                if (!effected_nodes.contains(graph.getRoot(right_graph_index))) {
                     // 如果本轮中 left 没有更新，就不用添加新边
+                    // 注意节点更新当且仅当其根节点更新
                     continue;
                 }
                 for (int x : graph.getInfo(right_graph_index)) {
