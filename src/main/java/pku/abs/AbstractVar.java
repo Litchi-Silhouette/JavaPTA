@@ -27,7 +27,7 @@ public class AbstractVar {
 
     @Override
     public String toString() {
-        String name = contextID + ": ";
+        String name = contextID + clazz.getName() + ": ";
         if (this.value != null) {
             name += this.value.getName() + (this.field != null ? "." + this.field.getName() : "");
         } else if (this.field != null) {
