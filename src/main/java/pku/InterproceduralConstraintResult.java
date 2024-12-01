@@ -47,6 +47,10 @@ public class InterproceduralConstraintResult {
         AbstractVarDomain domain = mcr.domain;
 
         for (Invoke invoke : mcr.invokeStmts) {
+            // boolean isSuper = Context.isSuper(invoke);
+            // if (isSuper) {
+            //     System.out.println("[Inter][invoke] Super call");
+            // }
             InvokeExp invokeExp = invoke.getInvokeExp();
             boolean isInstance = invokeExp instanceof InvokeInstanceExp ? true : false;
             int baseVarId = -1;
@@ -103,7 +107,7 @@ public class InterproceduralConstraintResult {
                     continue;
                 }
 
-                Context invokeContext = new Context(invoke, ir);
+                Context invokeContext = new Context(invoke, ir, callerContextId);
                 int calleeContextId = invokeContext.hashCode();
                 workList.add(invokeContext);
 

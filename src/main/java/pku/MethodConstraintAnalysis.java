@@ -20,7 +20,7 @@ public class MethodConstraintAnalysis extends MethodAnalysis<MethodConstraintRes
     @Override
     public MethodConstraintResult analyze(IR ir) {
         var result = new MethodConstraintResult(preprocess, staticDomain);
-        Context context = new Context(null, ir);
+        Context context = new Context(null, ir, -1);
         result.analysis(context);
         return result;
     }
