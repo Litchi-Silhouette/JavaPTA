@@ -96,7 +96,7 @@ public class MethodConstraintResult {
                 int dstId = domain.checkAndAdd(dstvar);
                 int fieldId = domain.getVarIndex(fieldVar);
                 if (fieldId == -1) {
-                    System.err.println("field not defined: " + field);
+                    System.err.println("field not defined: " + fieldVar.value.getName() + "." + field);
                     if (fieldVar.field != null)
                         fieldId = domain.addField(fieldVar);
                     else
@@ -131,7 +131,7 @@ public class MethodConstraintResult {
                 int srcId = domain.checkAndAdd(srcvar);
                 int fieldId = domain.getVarIndex(fieldVar);
                 if (fieldId == -1) {
-                    System.err.println("field not defined: " + field);
+                    System.err.println("field not defined: " + fieldVar.value.getName() + "." + field);
                     if (fieldVar.field != null)
                         fieldId = domain.addField(fieldVar);
                     else
