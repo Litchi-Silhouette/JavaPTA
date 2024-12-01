@@ -4,11 +4,11 @@ import benchmark.internal.Benchmark;
 
 // By Guo ZiXun
 
-public class A {
+class A {
     public int a;
 }
 
-public class B {
+class B {
     public A createA(int a) {
         Benchmark.alloc(1);
         A obj = new A();
@@ -17,7 +17,7 @@ public class B {
     }
 }
 
-public class C extends B {
+class C extends B {
     public A createA(int a) {
         Benchmark.alloc(2);
         A obj = new A();
@@ -26,7 +26,7 @@ public class C extends B {
     }
 }
 
-public class D extends C {
+class D extends C {
     public A createA(int a) {
         Benchmark.alloc(3);
         A obj = new A();
@@ -36,27 +36,26 @@ public class D extends C {
 }
 
 public class inher {
-  public static void main(String[] args) {
-      Benchmark.alloc(4);
-      C c = new C();
-      Benchmark.alloc(5);
-      D d = new D();
-      Benchmark.alloc(6);
-      B c1 = new B();
-      try {
-          for (int i = 0; i < 10; i++) {
-              c1 = c;
-          }
-      }
-      catch (Exception e) {
-          System.out.println("Exception");
-      }
-      A a = c1.createA(1);
-      Benchmark.test(1, a);
-      /*
-        Answer:
-         1 : 1 2
-       */
+    public static void main(String[] args) {
+        Benchmark.alloc(4);
+        C c = new C();
+        Benchmark.alloc(5);
+        D d = new D();
+        Benchmark.alloc(6);
+        B c1 = new B();
+        try {
+            for (int i = 0; i < 10; i++) {
+                c1 = c;
+            }
+        } catch (Exception e) {
+            System.out.println("Exception");
+        }
+        A a = c1.createA(1);
+        Benchmark.test(1, a);
+        /*
+         * Answer:
+         * 1 : 1 2
+         */
 
-  }
+    }
 }
