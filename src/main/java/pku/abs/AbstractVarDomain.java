@@ -126,6 +126,13 @@ public class AbstractVarDomain {
             return -1;
     }
 
+    public void print() {
+        System.out.println("AbstractVarDomain:");
+        for (var entry : index2name.entrySet()) {
+            System.out.println(entry.getKey() + " : " + entry.getValue());
+        }
+    }
+
     @Override
     public AbstractVarDomain clone() {
         var newDomain = new AbstractVarDomain();
