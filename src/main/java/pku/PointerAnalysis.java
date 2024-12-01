@@ -52,17 +52,25 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
         try {
             result.clear();
             world.getClassHierarchy().applicationClasses().forEach(tjclass -> {
+                var className = tjclass.getName();
+                if (className.equals("benchmark.internal.Benchmark")
+                            || className.equals("benchmark.internal.BenchmarkN"))
+                    return;
+                            
                 tjclass.getDeclaredMethods().forEach(method -> {
                     if (method.isAbstract())
                         return;
+                    // if (method.isConstructor())
+
                     Context context = new Context(null, method.getIR());
                     int currentContextId = context.hashCode();
 
                     // globalDomain continually updated
                     var mcr = new MethodConstraintResult(preprocess, globalDomain);
-                    System.out.println("Context: " + context.getName() + " " + currentContextId);
+                    System.out.println("[Entering Context] " + context.getName() + " " + currentContextId);
                     mcr.analysis(context);
-
+                    System.out.println("[Leaving Context] " + context.getName() + " " + currentContextId);
+                    
                     interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
                 });
             });
@@ -79,9 +87,9 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
 
                 // domain and preprocess continually updated
                 var mcr = new MethodConstraintResult(preprocess, globalDomain);
-                System.out.println("Context: " + context.getName() + " " + currentContextId);
+                System.out.println("[Entering Context] " + context.getName() + " " + currentContextId);
                 mcr.analysis(context);
-
+                System.out.println("[Leaving Context] " + context.getName() + " " + currentContextId);
                 interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
             }
 
