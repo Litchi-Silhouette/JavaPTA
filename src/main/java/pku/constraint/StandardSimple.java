@@ -21,4 +21,24 @@ public class StandardSimple {
     public void addSubset(int subset) {
         this.subsets.add(subset);
     }
+
+    @Override
+    public String toString() {
+        String result = left + " contains elements {";
+        for (int i = 0; i < elements.size(); i++) {
+            result += elements.get(i);
+            if (i != elements.size() - 1) {
+                result += ", ";
+            }
+        }
+        result += "} and subsets {";
+        for (int i = 0; i < subsets.size(); i++) {
+            result += subsets.get(i);
+            if (i != subsets.size() - 1) {
+                result += ", ";
+            }
+        }
+        result += "}";
+        return result;
+    }
 }

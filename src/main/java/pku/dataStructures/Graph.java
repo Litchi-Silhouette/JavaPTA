@@ -37,6 +37,9 @@ public class Graph <V> {
     public boolean isSameVertex(V vertex1, V vertex2) {
         return union_find.find(vertex1) == union_find.find(vertex2);
     }
+    public V getRoot(V vertex) {
+        return union_find.find(vertex);
+    }
     // 这里我们假设用 0 表示边活跃，用非零表示边不活跃。
     // 如果是自环，则返回 false 并且不添加边
     public boolean addEdge(V from, V to, Integer label) {
@@ -174,13 +177,10 @@ public class Graph <V> {
     // 从 current 开始，深度优先搜索，找到一个环，将环上的节点合并。 如果 current 不在 path 中，但在 visited 中，说明已经处理过，直接返回
     public void mergeStrongConnectedComponent(V current, ArrayList<V> path, HashSet<V> visited) {
         boolean merging = false;
+        V current_root = union_find.find(current);
         ArrayList<V> new_path = new ArrayList<>(path.size());
         for (V node : path) {
-            if (node == current) {
-                // 如果当前节点已经在路径中，说明路径中该点之后的节点构成了一个强连通分量
-                merging = true;
-                System.out.print("find strong connected component:");
-            }
+            // 理论上 path 中只会出现一次 node，因此不会自身合并自身
             if (merging){
                 if (DEBUG) {
                     System.out.print(node + " ");
@@ -188,14 +188,23 @@ public class Graph <V> {
                 merge(current, node);
 
             }
-            else{
-                new_path.add(node);
+            else {
+                if (union_find.find(node) == current_root) {
+                    // 如果当前节点已经在路径中，说明路径中该点之后的节点构成了一个强连通分量
+                    merging = true;
+                    System.out.print("find strong connected component:");
+                }
+                else {
+                    new_path.add(union_find.find(node));
+                }
             }
+
         }
+        current_root = union_find.find(current);
         path = new_path; // 路径中上一次该节点出现知乎的节点已经全部合并，只留前面的节点（和当前节点）
         visited.add(current);
         path.add(current);
-        HashMap<V, Integer> edges = getEdges(current);
+        HashMap<V, Integer> edges = new HashMap<>(getEdges(current_root));  // 由于合并会改变邻接表，因此这里需要复制一份
         for (V next : edges.keySet()) {
             mergeStrongConnectedComponent(next, path, visited); // 最终所有的环应当被合并，因此递归是终止的
         }

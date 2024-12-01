@@ -13,4 +13,9 @@ public class StandardForallInLeftContainsRight {
         this.right = right;
         this.f = f;
     }
+
+    @Override
+    public String toString() {
+        return "forall x in " + left + ", " + right + " in " + f;
+    }
 }

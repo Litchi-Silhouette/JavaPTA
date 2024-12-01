@@ -7,6 +7,8 @@ import pascal.taie.language.classes.JField;
 import pascal.taie.language.type.*;
 import pascal.taie.ir.IR;
 import pascal.taie.ir.exp.InstanceFieldAccess;
+import pascal.taie.ir.exp.InvokeStatic;
+import pascal.taie.ir.exp.*;
 import pascal.taie.ir.exp.StaticFieldAccess;
 import pku.abs.*;
 import pku.constraint.*;
@@ -14,14 +16,15 @@ import pku.constraint.*;
 public class MethodConstraintResult {
     public ConstraintSet constraintSet;
     public AbstractVarDomain domain;
-    public List<Stmt> leftStmts;
     public final PreprocessResult preprocess;
+    public List<Invoke> invokeStmts; // all invoke statements in the method
 
     public MethodConstraintResult(PreprocessResult preprocess, AbstractVarDomain domain) {
         this.constraintSet = new ConstraintSet();
-        this.domain = domain.clone();
-        this.leftStmts = new ArrayList<>();
+        // this.domain = domain.clone();
+        this.domain = domain;
         this.preprocess = preprocess;
+        this.invokeStmts = new ArrayList<Invoke>();
     }
 
     public Boolean checkRef(Type src, Type dst) {
@@ -31,33 +34,50 @@ public class MethodConstraintResult {
         return false;
     }
 
-    public void analysis(IR ir) {
+    public void analysis(Context context) {
+        IR ir = context.getIR();
         var stmts = ir.getStmts();
+        int currentContextId = context.hashCode();
+
+        Var thisVar = ir.getThis();
+        if (thisVar != null) {
+            AbstractVar var = new AbstractVar(currentContextId, thisVar, null);
+            domain.checkAndAdd(var);
+        }
+
         for (var stmt : stmts) {
+            System.out.println(stmt);
             if (stmt instanceof New) {
-                int malloc = preprocess.objs.get(stmt).count;
+                System.out.println("New");
+                var mallocObj = preprocess.objs.get(stmt);
+                int malloc = mallocObj.count;
                 var value = ((New) stmt).getLValue();
-                AbstractVar var = new AbstractVar(0, value, null);
-                var id = domain.checkAndAdd(var);
-                constraintSet.addSimpleEConstraint(new SimpleEConstraint(id, malloc));
+                AbstractVar var = new AbstractVar(currentContextId, value, null);
+                var id = domain.addVar(var, mallocObj.type);
+                domain.addMallocMapping(id, malloc);
+                var constraint = new SimpleEConstraint(id, id);
+                constraintSet.addSimpleEConstraint(constraint);
             } else if (stmt instanceof AssignLiteral) {
                 continue;
             } else if (stmt instanceof Copy) {
+                System.out.println("Copy");
                 var src = ((Copy) stmt).getRValue();
                 var dst = ((Copy) stmt).getLValue();
                 if (!checkRef(src.getType(), dst.getType())) {
                     continue;
                 }
-                var srcVar = new AbstractVar(0, src, null);
-                var dstVar = new AbstractVar(0, dst, null);
+                var srcVar = new AbstractVar(currentContextId, src, null);
+                var dstVar = new AbstractVar(currentContextId, dst, null);
                 var dstId = domain.checkAndAdd(dstVar);
                 var srcId = domain.getVarIndex(srcVar);
                 if (srcId == -1) {
                     System.err.println("srcVar not defined: " + srcVar);
-                    srcId = domain.addVar(srcVar);
+                    srcId = domain.addVar(srcVar, null);
                 }
-                constraintSet.addSimpleSConstraint(new SimpleSConstraint(dstId, srcId));
+                var constraint = new SimpleSConstraint(dstId, srcId);
+                constraintSet.addSimpleSConstraint(constraint);
             } else if (stmt instanceof LoadField) {
+                System.out.println("LoadField");
                 var dst = ((LoadField) stmt).getLValue();
                 var fieldaccess = ((LoadField) stmt).getFieldAccess();
                 AbstractVar fieldVar;
@@ -67,27 +87,32 @@ public class MethodConstraintResult {
                     if (!checkRef(field.getType(), dst.getType())) {
                         continue;
                     }
-                    fieldVar = new AbstractVar(0, null, field);
+                    fieldVar = new AbstractVar(currentContextId, null, field);
                 } else {
                     var base = ((InstanceFieldAccess) fieldaccess).getBase();
                     field = ((InstanceFieldAccess) fieldaccess).getFieldRef().resolve();
                     if (!checkRef(field.getType(), dst.getType())) {
                         continue;
                     }
-                    fieldVar = new AbstractVar(0, base, null);
+                    fieldVar = new AbstractVar(currentContextId, base, null);
                 }
-                AbstractVar dstvar = new AbstractVar(0, dst, null);
+                AbstractVar dstvar = new AbstractVar(currentContextId, dst, null);
                 int dstId = domain.checkAndAdd(dstvar);
                 int fieldId = domain.getVarIndex(fieldVar);
                 if (fieldId == -1) {
-                    fieldId = domain.addField(fieldVar);
-                    System.err.println("field not defined: " + field);
+                    System.err.println("field not defined: " + fieldVar.value.getName() + "." + field);
+                    if (fieldVar.field != null)
+                        fieldId = domain.addField(fieldVar);
+                    else
+                        fieldId = domain.addVar(fieldVar, null);
+                    System.err.println("field created: " + fieldId);
                 }
                 if (fieldaccess instanceof StaticFieldAccess)
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(dstId, fieldId));
                 else
-                    constraintSet.addAllHasConstraint(new AllHasConstraint(dstId, fieldId, field));
+                    constraintSet.addAllInConstraint(new AllInConstraint(dstId, fieldId, field));
             } else if (stmt instanceof StoreField) {
+                System.out.println("StoreField");
                 var src = ((StoreField) stmt).getRValue();
                 var fieldaccess = ((StoreField) stmt).getFieldAccess();
                 AbstractVar fieldVar;
@@ -97,21 +122,25 @@ public class MethodConstraintResult {
                     if (!checkRef(field.getType(), src.getType())) {
                         continue;
                     }
-                    fieldVar = new AbstractVar(0, null, field);
+                    fieldVar = new AbstractVar(currentContextId, null, field);
                 } else {
                     var base = ((InstanceFieldAccess) fieldaccess).getBase();
                     field = ((InstanceFieldAccess) fieldaccess).getFieldRef().resolve();
                     if (!checkRef(field.getType(), src.getType())) {
                         continue;
                     }
-                    fieldVar = new AbstractVar(0, base, null);
+                    fieldVar = new AbstractVar(currentContextId, base, null);
                 }
-                AbstractVar srcvar = new AbstractVar(0, src, null);
+                AbstractVar srcvar = new AbstractVar(currentContextId, src, null);
                 int srcId = domain.checkAndAdd(srcvar);
                 int fieldId = domain.getVarIndex(fieldVar);
                 if (fieldId == -1) {
-                    fieldId = domain.addField(fieldVar);
-                    System.err.println("field not defined: " + field);
+                    System.err.println("field not defined: " + fieldVar.value.getName() + "." + field);
+                    if (fieldVar.field != null)
+                        fieldId = domain.addField(fieldVar);
+                    else
+                        fieldId = domain.addVar(fieldVar, null);
+                    System.err.println("field created: " + fieldId);
                 }
                 if (fieldaccess instanceof StaticFieldAccess)
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(fieldId, srcId));
@@ -125,12 +154,12 @@ public class MethodConstraintResult {
                 if (!checkRef(base.getType(), dst.getType())) {
                     continue;
                 }
-                AbstractVar dstvar = new AbstractVar(0, dst, null);
-                AbstractVar basevar = new AbstractVar(0, base, null);
+                AbstractVar dstvar = new AbstractVar(currentContextId, dst, null);
+                AbstractVar basevar = new AbstractVar(currentContextId, base, null);
                 int dstId = domain.checkAndAdd(dstvar);
                 int baseId = domain.getVarIndex(basevar);
                 if (baseId == -1) {
-                    baseId = domain.addVar(basevar);
+                    baseId = domain.addVar(basevar, null);
                     System.err.println("base not defined: " + base);
                 }
                 constraintSet.addSimpleSConstraint(new SimpleSConstraint(dstId, baseId));
@@ -142,12 +171,12 @@ public class MethodConstraintResult {
                 if (!checkRef(base.getType(), src.getType())) {
                     continue;
                 }
-                AbstractVar srcvar = new AbstractVar(0, src, null);
-                AbstractVar basevar = new AbstractVar(0, base, null);
+                AbstractVar srcvar = new AbstractVar(currentContextId, src, null);
+                AbstractVar basevar = new AbstractVar(currentContextId, base, null);
                 int baseId = domain.checkAndAdd(basevar);
                 int srcId = domain.getVarIndex(srcvar);
                 if (srcId == -1) {
-                    srcId = domain.addVar(srcvar);
+                    srcId = domain.addVar(srcvar, null);
                     System.err.println("src not defined: " + src);
                 }
                 constraintSet.addSimpleSConstraint(new SimpleSConstraint(baseId, srcId));
@@ -160,9 +189,18 @@ public class MethodConstraintResult {
             } else if (stmt instanceof Cast) {
                 continue;
             } else if (stmt instanceof Invoke) {
-                leftStmts.add(stmt);
+                var exp = ((Invoke) stmt).getInvokeExp();
+                if (exp instanceof InvokeStatic) {
+                    var methodRef = ((InvokeStatic) exp).getMethodRef();
+                    var className = methodRef.getDeclaringClass().getName();
+                    if (className.equals("benchmark.internal.Benchmark")
+                            || className.equals("benchmark.internal.BenchmarkN")) {
+                        continue; // ignore alloc and test when analyzing
+                    }
+                }
+                invokeStmts.add((Invoke) stmt);
             } else if (stmt instanceof Return) {
-                leftStmts.add(stmt);
+                continue;
             } else if (stmt instanceof If) {
                 continue;
             } else if (stmt instanceof Goto) {

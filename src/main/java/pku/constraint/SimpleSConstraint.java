@@ -8,4 +8,8 @@ public class SimpleSConstraint {
         this.left = left;
         this.right = right;
     }
+
+    public void print() {
+        System.out.println(left + " contains " + right);
+    }
 }

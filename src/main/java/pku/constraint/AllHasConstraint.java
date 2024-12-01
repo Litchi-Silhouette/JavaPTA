@@ -14,4 +14,8 @@ public class AllHasConstraint {
         this.right = right;
         this.field = field;
     }
+
+    public void print() {
+        System.out.println(left + "." + field.getName() + " = " + right);
+    }
 }
