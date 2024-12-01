@@ -54,9 +54,9 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
             world.getClassHierarchy().applicationClasses().forEach(tjclass -> {
                 var className = tjclass.getName();
                 if (className.equals("benchmark.internal.Benchmark")
-                            || className.equals("benchmark.internal.BenchmarkN"))
+                        || className.equals("benchmark.internal.BenchmarkN"))
                     return;
-                            
+
                 tjclass.getDeclaredMethods().forEach(method -> {
                     if (method.isAbstract())
                         return;
@@ -70,7 +70,7 @@ public class PointerAnalysis extends PointerAnalysisTrivial {
                     System.out.println("[Entering Context] " + context.getName() + " " + currentContextId);
                     mcr.analysis(context);
                     System.out.println("[Leaving Context] " + context.getName() + " " + currentContextId);
-                    
+
                     interproceduralConstraintResult.updateInterprocedualConstraint(mcr, currentContextId, workList);
                 });
             });
