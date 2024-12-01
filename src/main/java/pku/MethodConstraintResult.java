@@ -86,7 +86,7 @@ public class MethodConstraintResult {
                 if (fieldaccess instanceof StaticFieldAccess)
                     constraintSet.addSimpleSConstraint(new SimpleSConstraint(dstId, fieldId));
                 else
-                    constraintSet.addAllHasConstraint(new AllHasConstraint(dstId, fieldId, field));
+                    constraintSet.addAllInConstraint(new AllInConstraint(dstId, fieldId, field));
             } else if (stmt instanceof StoreField) {
                 var src = ((StoreField) stmt).getRValue();
                 var fieldaccess = ((StoreField) stmt).getFieldAccess();
