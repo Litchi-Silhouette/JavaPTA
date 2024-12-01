@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
-import pascal.taie.language.type.ClassType;
 import pascal.taie.language.classes.JField;
-import pascal.taie.language.type.ArrayType;
+import pascal.taie.language.type.*;
 import pascal.taie.ir.exp.Var;
 
 public class AbstractVarDomain {
@@ -36,16 +35,19 @@ public class AbstractVarDomain {
     }
 
     public Integer addField(AbstractVar name) {
-        if (!name2index.containsKey(name) && name.field != null) {
+        if (name.field != null) {
             return addElement(name);
         }
         return -1;
     }
 
-    public Integer addVar(AbstractVar name) {
+    public Integer addVar(AbstractVar name, Type ttype) {
         if (!name2index.containsKey(name) && name.field == null) {
             var value = name.value;
             var type = value.getType();
+            if (ttype != null) {
+                type = ttype;
+            }
             if (type instanceof ArrayType) {
                 type = ((ArrayType) type).elementType();
             }
@@ -54,7 +56,7 @@ public class AbstractVarDomain {
                 for (var field : fields) {
                     if (field.isStatic())
                         continue;
-                    AbstractVar fieldVar = new AbstractVar(0, value, field);
+                    AbstractVar fieldVar = new AbstractVar(name.contextID, value, field);
                     addElement(fieldVar);
                 }
             }
@@ -103,7 +105,7 @@ public class AbstractVarDomain {
     public Integer checkAndAdd(AbstractVar name) {
         var id = getVarIndex(name);
         if (id == -1) {
-            return addVar(name);
+            return addVar(name, null);
         }
         return id;
     }
@@ -118,10 +120,17 @@ public class AbstractVarDomain {
             type = ((ArrayType) type).elementType();
         }
         if (type instanceof ClassType) {
-            AbstractVar fieldVar = new AbstractVar(0, value, field);
+            AbstractVar fieldVar = new AbstractVar(name.contextID, value, field);
             return getVarIndex(fieldVar);
         } else
             return -1;
+    }
+
+    public void print() {
+        System.out.println("AbstractVarDomain:");
+        for (var entry : index2name.entrySet()) {
+            System.out.println(entry.getKey() + " : " + entry.getValue());
+        }
     }
 
     @Override
